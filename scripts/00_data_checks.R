@@ -9,7 +9,7 @@ data_2023 <- load_pbp(2023) %>%
 
 write_csv(data_2023, file = here("data/raw_data.csv"))
 
-# data selection
+# data selection ----
 modeling_data <- data_2023 %>%
   filter(between(week, 2, 17),
          !is.na(down),
@@ -25,3 +25,19 @@ modeling_data %>%
   scale_y_continuous(labels = comma)
 
 ggsave(filename = "play_type.jpg", path = here("plots/"))
+
+# individuality check ----
+data_2023 <- read_csv(here("data/raw_data.csv"))
+team_data <- nflreadr::load_teams()
+
+data_2023 %>%
+  filter(play_type %in% c("pass", "run")) %>%
+  summarize(pass_percentage = sum(pass) /n() * 100,
+            .by = posteam) %>%
+  arrange(desc(pass_percentage)) %>%
+  left_join(team_data, by = join_by(posteam == team_abbr)) %>%
+  ggplot(aes(x = posteam, y = pass_percentage)) +
+  geom_col(position = "stack")
+
+
+
