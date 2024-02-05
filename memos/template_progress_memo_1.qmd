@@ -1,10 +1,10 @@
 ---
-title: "Progress Memo 1"
+title: "Progress Memo #1"
 subtitle: |
   | Final Project 
   | Data Science 2 with R (STAT 301-2)
-author: "YOUR NAME"
-date: today
+author: "Alex Boyko"
+date: "02-04-2024"
 
 format:
   html:
@@ -12,7 +12,6 @@ format:
     embed-resources: true
     
 execute:
-  echo: false
   warning: false
 
 from: markdown+emoji 
@@ -20,47 +19,51 @@ reference-location: margin
 citation-location: margin
 ---
 
-::: {.callout-important}
-## Memo format
-
-Like all other submissions for this course, we expect the memo to be neat and well organized. This a template to get you started. 
-
-You should make this document your own. To help with this we have added a date to the yaml above (good whenever writing memos). You should remove this block when making this document your own.
-
-:::
-
 ::: {.callout-tip icon=false}
 
 ## Github Repo Link
 
-To link to your github **repo**sitory, appropriately edit the example link below. Meaning replace `https://your-github-repo-url` with your github repo url. Suggest verifying the link works before submitting.
-
-[https://your-github-repo-url](https://your-github-repo-url)
+[https://github.com/stat301-2-2024-winter/final-project-2-aboyko22](https://github.com/stat301-2-2024-winter/final-project-2-aboyko22)
 
 :::
 
-::: {.callout-warning}
-GitHub (free account) cannot store large files. If you try to commit and push a large dataset you will have an ERROR! Any file over 100 MB (100,000 KB) needs to be added to the `.gitignore` file BEFORE committing.
+## Prediction Problem
 
-**We may need to do that for files in your final project!**
-:::
+For my final project, I'm focusing on trying to predict play-calling tendencies in the NFL. There are a lot of ways to do this, but I am formatting this as a binary classification problem where, given all of the data from before the upcoming play, I am trying to predict whether it will be a run or a pass.
 
 ## Data source
 
-Blah blah blah^[an example of footnote --- [content in margins](https://quarto.org/docs/blog/posts/2022-02-17-advanced-layout/)]
+The data I've chosen to use comes from the `nflverse` package.^[There's a specification about data not coming from R packages. The actual play-by-play data is the same across multiple sources and what separates `nflverse` is their own models and metrics, which I am not planning on using and I've pulled the data from here because of familiarity and ease of use. If you would like me to get the data from somewhere else, please let me know.] Specifically, this is play-by-play data from the 2023 NFL season. Here are links for the [Github repository](https://github.com/nflverse) and main page for the [package documentation](https://nflverse.nflverse.com/), and I've written out the raw data into the `data` folder for future reference.
 
 ## Why this data
 
-Blah blah blah^[another footnote]
+This is a very common source for analysis on NFL data, and one that I have used before and feel comfortable using. I've been a big football fan since I was a little kid and I started working with R as a tool to learn about advanced metrics in football. It's been a while since I've used it for football analysis and I feel it will be handy to have a topic I know well and a side project to fill the upcoming post Super Bowl void.
 
 ## Data quality & complexity check
 
-Blah blah blah
+The selected data I have is currently 47,399 by 372. However, this includes a lot of ID variables and information not relevant for my purposes, and my educated guess is that the actual modeling data will be approximately 30,000 (if I choose to use everything) observations and 20-25 predictors. One of the bigger aspects with my topic choice is that the initial feature engineering and data manipulation stages will be less clear and longer, so it's difficult to give estimates about the data quality and complexity at this point. I apologize for not being able to be exact with the parameters, but they will be relatively standard for football analysis (down, distance, score, time, etc.).
+
+Using a quick skim, there are 165 character and 207 numeric variables, so I don't foresee any issues with having enough categorical and numerical information. A lot of variables also use `NA` values as relevant values since there are so many overly specific variables. From my experience using this package, I haven't had any problems with explicitly missing information.
+
+```{r, eval=FALSE}
+#| label: loading-data
+# Loading in data
+library(nflverse)
+
+data_2023 <- load_pbp(2023)
+
+```
+
+## Target variable analysis
+
+```{r, echo=FALSE}
+#| label: plot
+knitr::include_graphics("play_type.jpg")
+
+```
+
+There are technically other play types in the dataset that have already been cleaned away, but the two I am focusing on are `pass` and `run`. Since this is a classification problem, nothing needs to be done to transform the target variable beyond data cleaning. There is a bit of an imbalance between the two (17k vs 12k), so stratified sampling may be helpful.
 
 ## Potential data issues
 
-Blah blah blah
-
-## Misc
-
-Blah Blah
+The data is already very clean. Since I will be doing some data manipulation before modeling and creating new variables, I need to make sure that the output is sound. Otherwise, though, I do not see any potential avenues for quality issues within the dataset.
