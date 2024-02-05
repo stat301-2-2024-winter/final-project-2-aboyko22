@@ -31,6 +31,9 @@
 *.DS_Store
 **/.DS_Store
 
+data/*.csv
+data/raw_data.csv
+
 # ignore files (likely datasets or graphics) if too large (> 100 MB)
 # specify pathway to dataset data/project_dataset.csv
 # if all datasets are too large then use data/*.csv (only ignores CSVs)
