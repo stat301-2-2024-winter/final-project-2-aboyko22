@@ -3,6 +3,7 @@ library(tidyverse)
 library(nflverse)
 library(scales)
 library(here)
+library(tidymodels)
 
 # load data ----
 data_2022 <- load_pbp(2022) %>%
@@ -22,35 +23,7 @@ save(data_dictionary, file = here("data/data_dictionary.rda"))
 # data narrowing (LATER)
 
 # Play call variation by ----
-
-## week ----
-# not super important, small trend towards less later
-data_2022 %>%
-  filter(play_type %in% c("pass", "run")) %>%
-  summarize(pass_percentage = sum(pass) / n() * 100,
-            .by = week) %>%
-  ggplot(aes(x = week, y = pass_percentage)) +
-  geom_col(position = "stack", color = "blue")
-
-## team ----
-# makes a big difference
-data_2022 %>%
-  filter(play_type %in% c("pass", "run")) %>%
-  summarize(pass_percentage = sum(pass) / n() * 100,
-            .by = posteam) %>%
-  ggplot(aes(x = posteam, y = pass_percentage)) +
-  geom_col(position = "stack")
-
-## defense ----
-# important, but less important
-data_2022 %>%
-  filter(play_type %in% c("pass", "run")) %>%
-  summarize(pass_percentage = sum(pass) / n() * 100,
-            .by = defteam) %>%
-  ggplot(aes(x = defteam, y = pass_percentage)) +
-  geom_col(position = "stack")
-
-# making a function
+# making a function ----
 col_chart <- function(var) {
   filename <- rlang::englue("play_calls_by_{var}.jpg")
   
@@ -64,22 +37,43 @@ col_chart <- function(var) {
   ggsave(filename = filename, plot = plot, path = here("plots/"))
 }
 
-# function works
-# yay
-
 # loop the function
-
 loop_vars <- c("week", "posteam", "defteam", "start_time", "roof", "surface", "total_line")
 
 for (var in loop_vars) {
   print(col_chart(var))
 }
 
+data_2022 %>%
+  count(start_time)
+
+# results from this:
+# offensive team has a big impact, lots of variability
+# defense matters, but to a lesser extent
+# the environmental factors are not super relevant
+# vegas spread has a relationship, but definitely because of confounding
+# week may matter (run in december), but low variability
 
 
 
 
+# is unpredictability a good thing?
+# answer: basically no relationship, but interesting
+
+data_2022 %>%
+  mutate(play_call_unpredictability = (pass_oe)^2) %>%
+  summarize(unpredictability = sum(play_call_unpredictability),
+            success = sum(epa),
+            .by = posteam) %>%
+  mutate(unpredictability = unpredictability / max(unpredictability),
+         success = success / max(success)) %>%
+  ggplot(aes(x = unpredictability, y = success, label = posteam)) +
+  geom_vline(xintercept = 0.854, lty = 2, color = "red") + # calculated mean
+  geom_hline(yintercept = -0.0431, lty = 2, color = "red") + # calculated mean
+  geom_smooth(method = "lm") +
+  geom_label()
 
 
+# cor matrix (LATER)
 
 
