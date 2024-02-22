@@ -58,7 +58,7 @@ data_2023 <- load_pbp(2023)
 
 ```{r, echo=FALSE}
 #| label: plot
-knitr::include_graphics("play_type.jpg")
+knitr::include_graphics("memo_files/play_type.jpg")
 
 ```
 
