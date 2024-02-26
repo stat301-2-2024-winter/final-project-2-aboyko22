@@ -20,10 +20,8 @@ save(data_dictionary, file = here("data/data_dictionary.rda"))
 # graphics that might be helpful for the final output
 # but none of the claims about individual teams will be representative
 
-# data narrowing (LATER)
-
 # Play call variation by ----
-# making a function ----
+# making a function
 col_chart <- function(var) {
   filename <- rlang::englue("play_calls_by_{var}.jpg")
   
@@ -54,11 +52,14 @@ data_2022 %>%
 # vegas spread has a relationship, but definitely because of confounding
 # week may matter (run in december), but low variability
 
-
-
-
 # is unpredictability a good thing?
 # answer: basically no relationship, but interesting
+
+results_2022 <- nflreadr::load_schedules(seasons = 2022) %>%
+  filter(game_type == "REG") %>%
+  pivot_longer()
+  
+# check if unpredictability effects success -> record
 
 data_2022 %>%
   mutate(play_call_unpredictability = (pass_oe)^2) %>%
@@ -73,7 +74,6 @@ data_2022 %>%
   geom_smooth(method = "lm") +
   geom_label()
 
-
 # cor matrix (LATER)
 
-
+# data narrowing (LATER)
