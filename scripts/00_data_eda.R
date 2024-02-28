@@ -57,9 +57,16 @@ data_2022 %>%
 
 results_2022 <- nflreadr::load_schedules(seasons = 2022) %>%
   filter(game_type == "REG") %>%
-  pivot_longer()
+  pivot_longer(cols = c(away_team, home_team),
+               values_to = "team") %>%
+  select(team, name, away_score, home_score, result) %>%
+  mutate(win = 
+           if_else(result == 0, 0.5,
+    if_else(name == "home_team" & result > 0 | name == "away_team" & result < 0, 1, 0))) %>%
+  summarize(win_percentage = mean(win), .by = team)
   
 # check if unpredictability effects success -> record
+# basically no relationship once again
 
 data_2022 %>%
   mutate(play_call_unpredictability = (pass_oe)^2) %>%
@@ -68,7 +75,8 @@ data_2022 %>%
             .by = posteam) %>%
   mutate(unpredictability = unpredictability / max(unpredictability),
          success = success / max(success)) %>%
-  ggplot(aes(x = unpredictability, y = success, label = posteam)) +
+  left_join(results_2022, by = join_by(posteam == team)) %>%
+  ggplot(aes(x = unpredictability, y = success, label = posteam, color = win_percentage)) +
   geom_vline(xintercept = 0.854, lty = 2, color = "red") + # calculated mean
   geom_hline(yintercept = -0.0431, lty = 2, color = "red") + # calculated mean
   geom_smooth(method = "lm") +
@@ -77,3 +85,26 @@ data_2022 %>%
 # cor matrix (LATER)
 
 # data narrowing (LATER)
+data_2022 %>%
+  summarize(pass_percentage = sum(pass) /n() * 100, .by = c(posteam_type, posteam)) %>%
+  pivot_wider(names_from = posteam_type, values_from = pass_percentage) %>%
+  mutate(diff = home - away) %>% view() # defteam similar results
+
+# I'll include it, but test in one recipe because my gut says this is noise
+
+modeling_variables <- c(posteam, posteam_type, defteam, yardline_100, game_date,
+                        game_seconds_remaining, quarter_seconds_remaining, drive,
+                        down, ydstogo, score_differential_post, fg_prob, safety_prob,
+                        td_prob, wp)
+
+# messing with previous game results
+data_2022 %>%
+  filter(home_team == "NYJ", away_team == "BAL", posteam == "NYJ") %>%
+  mutate(pass_num = cumsum(pass), run_num = cumsum(rush),
+    run_epa = if_else(play_type == "run", epa, 0),
+         pass_epa = if_else(play_type == "pass", epa, 0),
+         run_success = cumsum(run_epa) / run_num,
+         pass_sucess = cumsum(pass_epa) / pass_num) %>% view()
+
+
+
