@@ -98,6 +98,7 @@ modeling_variables <- c(posteam, posteam_type, defteam, yardline_100, game_date,
                         td_prob, wp)
 
 # messing with previous game results
+# already exists within dataset
 data_2022 %>%
   filter(home_team == "NYJ", away_team == "BAL", posteam == "NYJ") %>%
   mutate(pass_num = cumsum(pass), run_num = cumsum(rush),
