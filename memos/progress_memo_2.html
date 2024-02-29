@@ -3055,11 +3055,46 @@ Github Repo Link
 </section>
 <section id="models" class="level2">
 <h2 class="anchored" data-anchor-id="models">Models</h2>
+<div class="cell">
+<div class="cell-output-display">
+<table class="table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: left;">id</th>
+<th style="text-align: left;">.metric</th>
+<th style="text-align: right;">mean</th>
+<th style="text-align: right;">n</th>
+<th style="text-align: right;">std_err</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">null</td>
+<td style="text-align: left;">accuracy</td>
+<td style="text-align: right;">0.5849798</td>
+<td style="text-align: right;">30</td>
+<td style="text-align: right;">0.0000179</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">basic</td>
+<td style="text-align: left;">accuracy</td>
+<td style="text-align: right;">0.6434137</td>
+<td style="text-align: right;">30</td>
+<td style="text-align: right;">0.0014215</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>Before the more formalized model fitting begins, there are three estimates of play-calling accuracy that I have to work with. The first two are above, being the null model and and extremely basic logistic regression model. I am not showing the recipe here, but it uses down and distance, score differential, and quarter as predictors.</p>
+<p>These two are extremely simple, and give an estimate for an absolute lower bound of future model accuracy. However, this data set also includes a metric for pass expectation, and it has an accuracy of about 70%. This is very likely oversimplified, but provides an idea of what an industry-standard model might be capable of achieving.</p>
 </section>
 <section id="progress-summary" class="level2">
 <h2 class="anchored" data-anchor-id="progress-summary">Progress Summary</h2>
 <section id="initial-eda" class="level3">
 <h3 class="anchored" data-anchor-id="initial-eda">Initial EDA</h3>
+<p>The majority of the progress so far has been towards performing and initial exploratory data analysis on the same set of data for the 2022 season to look at trends and see which variables may need to be transformed and which are not worth including at all. This led me to the idea of the four recipe types that I will be using.</p>
+<p>Having this data has allowed me to experiment with less standard features while not sacrificing data quantity or quality by working outside of the training and testing sets.</p>
 </section>
 <section id="recipes" class="level3">
 <h3 class="anchored" data-anchor-id="recipes">Recipes</h3>
@@ -3073,9 +3108,11 @@ Github Repo Link
 </section>
 <section id="the-coach" class="level4">
 <h4 class="anchored" data-anchor-id="the-coach">The Coach</h4>
+<p>This sets a baseline for what I believe to a reasonable accuracy rate for a person predicting plays just before they happen without any external aid. The recipe attempts to account for trends that a coach would know off-hand, like offensive and defensive efficiency, previous gameplay results, and external conditions.</p>
 </section>
 <section id="the-computer" class="level4">
 <h4 class="anchored" data-anchor-id="the-computer">The Computer</h4>
+<p>With all of the intricate details of the <code>nflverse</code>, there are a lot of exact measurements that can be used that a person may be able to closely intuit, but not fully know. This recipe will use all of the information the <code>coach</code> has, but also be able to look at a closer scale of rolling success rates throughout the game and previous play-calling patterns, among other connections that are extremely difficult to see in real time.</p>
 </section>
 <section id="data" class="level4">
 <h4 class="anchored" data-anchor-id="data">Data</h4>

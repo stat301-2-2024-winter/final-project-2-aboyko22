@@ -36,9 +36,27 @@ Throughout the model comparison steps, the `accuracy` metric, along with the sta
 
 ## Models
 
+```{r, echo=FALSE}
+library(tidyverse)
+library(here)
+
+load(here("memos/memo_files/baseline_results.rda"))
+
+baseline_results %>% knitr::kable()
+
+```
+
+Before the more formalized model fitting begins, there are three estimates of play-calling accuracy that I have to work with. The first two are above, being the null model and and extremely basic logistic regression model. I am not showing the recipe here, but it uses down and distance, score differential, and quarter as predictors.
+
+These two are extremely simple, and give an estimate for an absolute lower bound of future model accuracy. However, this data set also includes a metric for pass expectation, and it has an accuracy of about 70%. This is very likely oversimplified, but provides an idea of what an industry-standard model might be capable of achieving.
+
+
 ## Progress Summary
 
 ### Initial EDA
+The majority of the progress so far has been towards performing and initial exploratory data analysis on the same set of data for the 2022 season to look at trends and see which variables may need to be transformed and which are not worth including at all. This led me to the idea of the four recipe types that I will be using.
+
+Having this data has allowed me to experiment with less standard features while not sacrificing data quantity or quality by working outside of the training and testing sets.
 
 ### Recipes
 
@@ -49,7 +67,10 @@ This recipe is pretty self-explanatory. Without any features, the most accurate 
 I set this aside with the intention of these being at about the same level as a new or casual football fan. Any information at their disposal must be visible on a TV broadcast. These include predictors like down and distance, field positioning, time, and score.
 
 #### The Coach
+This sets a baseline for what I believe to a reasonable accuracy rate for a person predicting plays just before they happen without any external aid. The recipe attempts to account for trends that a coach would know off-hand, like offensive and defensive efficiency, previous gameplay results, and external conditions.
+
 #### The Computer
+With all of the intricate details of the `nflverse`, there are a lot of exact measurements that can be used that a person may be able to closely intuit, but not fully know. This recipe will use all of the information the `coach` has, but also be able to look at a closer scale of rolling success rates throughout the game and previous play-calling patterns, among other connections that are extremely difficult to see in real time.
  
 #### Data
 
