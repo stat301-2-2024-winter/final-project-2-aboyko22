@@ -28,6 +28,11 @@ citation-location: margin
 :::
 
 ## Analysis Plan
+The cleaned data is initially split into an 80/20 proportion of training and testing data. Resampling then takes place on the training set using v-fold cross-validation.
+
+There are four main recipe subtypes that I will be using, which I am calling the `null`, the `fan`, the `coach`, and the `computer`. Although I could probably work on my naming-schematic ability, the point of these is try to incorporate some options to glean usable information and trends from this project. Since these models are specialized for prediction, a lot of the inferential ability is lost in the process. These are for me to better understand how this dataset works and how I may possibly become a more engaged fan. More details about these subtypes are below.
+
+Throughout the model comparison steps, the `accuracy` metric, along with the standard errors, will be used to determine which model performs the best. Once the final model(s) have been chosen, trained, and compared to the test set, other metrics will be used to examine how they perform in certain circumstances and assess the total residual probabilities.
 
 ## Models
 
@@ -36,6 +41,15 @@ citation-location: margin
 ### Initial EDA
 
 ### Recipes
+
+#### The Null
+This recipe is pretty self-explanatory. Without any features, the most accurate prediction we can make is to see if runs or passes happen more often, and simply always choose the more-frequent one.
+
+#### The Fan
+I set this aside with the intention of these being at about the same level as a new or casual football fan. Any information at their disposal must be visible on a TV broadcast. These include predictors like down and distance, field positioning, time, and score.
+
+#### The Coach
+#### The Computer
 
 ### Model Fits/Tuning
 

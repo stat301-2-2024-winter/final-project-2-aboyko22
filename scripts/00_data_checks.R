@@ -34,16 +34,11 @@ modeling_data <- data_2023 %>%
          aborted_play == 0) %>%
   
   # Choosing variables to work with
-  select(posteam, posteam_type, defteam, yardline_100, game_date, half_seconds_remaining, xpass, pass,
-         goal_to_go, qtr, down, ydstogo, play_type, score_differential_post, fg_prob, safety_prob, td_prob,
+  select(posteam, defteam, posteam_type, posteam_score, defteam_score, yardline_100, down, ydstogo,
+         goal_to_go, qtr, half_seconds_remaining, score_differential, fg_prob, safety_prob, td_prob,
          epa, total_home_rush_epa, total_home_pass_epa, total_away_rush_epa, total_away_pass_epa, drive,
-         qb_scramble, 
-         
-         )%>%
-  
-  # where to go from here
-    # create game variables and rolling success
-    # fix variable types (rename for graphs)
+         posteam_timeouts_remaining, third_down_converted, third_down_failed, wp, game_date, xpass, pass, play_type) %>%
+    # fix variable types
   mutate(qtr = factor(qtr),   
          down = factor(down),
          month = factor(month(game_date))) %>%

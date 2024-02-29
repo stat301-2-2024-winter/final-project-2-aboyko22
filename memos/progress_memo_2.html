@@ -3050,6 +3050,9 @@ Github Repo Link
 </div>
 <section id="analysis-plan" class="level2">
 <h2 class="anchored" data-anchor-id="analysis-plan">Analysis Plan</h2>
+<p>The cleaned data is initially split into an 80/20 proportion of training and testing data. Resampling then takes place on the training set using v-fold cross-validation.</p>
+<p>There are four main recipe subtypes that I will be using, which I am calling the <code>null</code>, the <code>fan</code>, the <code>coach</code>, and the <code>computer</code>. Although I could probably work on my naming-schematic ability, the point of these is try to incorporate some options to glean usable information and trends from this project. Since these models are specialized for prediction, a lot of the inferential ability is lost in the process. These are for me to better understand how this dataset works and how I may possibly become a more engaged fan. More details about these subtypes are below.</p>
+<p>Throughout the model comparison steps, the <code>accuracy</code> metric, along with the standard errors, will be used to determine which model performs the best. Once the final model(s) have been chosen, trained, and compared to the test set, other metrics will be used to examine how they perform in certain circumstances and assess the total residual probabilities.</p>
 </section>
 <section id="models" class="level2">
 <h2 class="anchored" data-anchor-id="models">Models</h2>
@@ -3061,6 +3064,20 @@ Github Repo Link
 </section>
 <section id="recipes" class="level3">
 <h3 class="anchored" data-anchor-id="recipes">Recipes</h3>
+<section id="the-null" class="level4">
+<h4 class="anchored" data-anchor-id="the-null">The Null</h4>
+<p>This recipe is pretty self-explanatory. Without any features, the most accurate prediction we can make is to see if runs or passes happen more often, and simply always choose the more-frequent one.</p>
+</section>
+<section id="the-fan" class="level4">
+<h4 class="anchored" data-anchor-id="the-fan">The Fan</h4>
+<p>I set this aside with the intention of these being at about the same level as a new or casual football fan. Any information at their disposal must be visible on a TV broadcast. These include predictors like down and distance, field positioning, time, and score.</p>
+</section>
+<section id="the-coach" class="level4">
+<h4 class="anchored" data-anchor-id="the-coach">The Coach</h4>
+</section>
+<section id="the-computer" class="level4">
+<h4 class="anchored" data-anchor-id="the-computer">The Computer</h4>
+</section>
 </section>
 <section id="model-fitstuning" class="level3">
 <h3 class="anchored" data-anchor-id="model-fitstuning">Model Fits/Tuning</h3>
