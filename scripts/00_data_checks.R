@@ -3,6 +3,7 @@ library(tidyverse)
 library(nflverse)
 library(scales)
 library(here)
+library(tidymodels)
 
 # load data ----
 data_2023 <- load_pbp(2023) %>% # only run once
@@ -43,8 +44,25 @@ modeling_data <- data_2023 %>%
          down = factor(down),
          month = factor(month(game_date))) %>%
   select(-game_date)
-    # initial split
-    # save out files
+    
+# initial split ---- 
+
+# This is not the format this should be completed in
+# Folds/Split will have to occur again later
+# Only for null and baseline model
+
+set.seed(1703)
+data_split <- initial_split(modeling_data, prop = 0.80, strata = play_type)
+
+training_data <- training(data_split)
+testing_data <- testing(data_split)
+
+data_folds <- vfold_cv(training_data, v = 10, repeats = 3, strata = play_type)
+
+# save out files
+save(training_data, file = here("data/training_data.rda"))
+save(testing_data, file = here("data/testing_data.rda"))
+save(data_folds, file = here("data/data_folds.rda"))
 
 # id null results ----
 modeling_data %>%

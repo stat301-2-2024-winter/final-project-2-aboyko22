@@ -50,9 +50,7 @@ I set this aside with the intention of these being at about the same level as a 
 
 #### The Coach
 #### The Computer
-
-### Model Fits/Tuning
-
+ 
 #### Data
 
 All data used in this project is coming from the `nflverse` package. I've provided links to the [repository](https://github.com/nflverse) and [documentation](https://nflverse.nflverse.com/) to show how this data is collected and updated.
