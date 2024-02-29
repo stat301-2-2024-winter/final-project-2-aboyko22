@@ -34,20 +34,39 @@ modeling_data <- data_2023 %>%
          aborted_play == 0) %>%
   
   # Choosing variables to work with
-  select(posteam, posteam_type, defteam, yardline_100, game_date, half_seconds_remaining,
-         qtr, down, ydstogo, play_type, score_differential_post, fg_prob, safety_prob, td_prob, epa,
-         total_home_rush_epa, total_home_pass_epa, total_away_rush_epa, total_away_pass_epa, drive) %>%
+  select(posteam, posteam_type, defteam, yardline_100, game_date, half_seconds_remaining, xpass, pass,
+         goal_to_go, qtr, down, ydstogo, play_type, score_differential_post, fg_prob, safety_prob, td_prob,
+         epa, total_home_rush_epa, total_home_pass_epa, total_away_rush_epa, total_away_pass_epa, drive,
+         qb_scramble, 
+         
+         )%>%
   
   # where to go from here
     # create game variables and rolling success
     # fix variable types (rename for graphs)
-  mutate(qtr = factor(qtr),
+  mutate(qtr = factor(qtr),   
          down = factor(down),
          month = factor(month(game_date))) %>%
   select(-game_date)
     # initial split
     # save out files
 
+# id null results ----
+modeling_data %>%
+  mutate(error = abs(pass-xpass),
+         bingo = if_else(pass == 1 & xpass > 0.50 | pass == 0 & xpass < 0.50, 1, 0)) %>%
+  summarize(x_avg = mean(xpass),
+            avg = mean(pass),
+            accuracy = mean(bingo),
+            abs_mean_err = mean(error))
+
+# checking qb scrambles ----
+data_2023 %>%
+  filter(posteam == "BAL") %>%
+  filter(pass == 1 & qb_scramble == 1) %>% view()
+
+# qb scrambles are pass plays
+# does not include designed runs
 
 # graph for first memo ----
 modeling_data %>% count(play_type)
@@ -62,6 +81,10 @@ modeling_data %>%
 ggsave(filename = "play_type.jpg", path = here("plots/"))
 
 
-
+# 4 recipes
+# - linear model
+#  + variant
+# - tree model
+#  + variant
 
 
