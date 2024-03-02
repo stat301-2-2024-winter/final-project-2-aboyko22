@@ -12,6 +12,8 @@ data_2022 <- load_pbp(2022) %>%
          play_type %in% c("pass", "run"))
 
 data_dictionary <- nflreadr::dictionary_pbp
+team_data <- nflreadr::load_teams()
+
 save(data_dictionary, file = here("data/data_dictionary.rda"))
 
 # this data is not for the same season as the modeling process
@@ -89,13 +91,7 @@ data_2022 %>%
   summarize(pass_percentage = sum(pass) /n() * 100, .by = c(posteam_type, posteam)) %>%
   pivot_wider(names_from = posteam_type, values_from = pass_percentage) %>%
   mutate(diff = home - away) %>% view() # defteam similar results
-
-# I'll include it, but test in one recipe because my gut says this is noise
-
-modeling_variables <- c(posteam, posteam_type, defteam, yardline_100, game_date,
-                        game_seconds_remaining, quarter_seconds_remaining, drive,
-                        down, ydstogo, score_differential_post, fg_prob, safety_prob,
-                        td_prob, wp)
+  # I'll include it, but test in one recipe because my gut says this is noise
 
 # messing with previous game results
 # already exists within dataset

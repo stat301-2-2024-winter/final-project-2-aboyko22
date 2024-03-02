@@ -12,7 +12,6 @@ data_2023 <- load_pbp(2023) %>% # only run once
 write_csv(data_2023, file = here("data/raw_data.csv")) # only run once
 
 data_2023 <- read_csv(here("data/raw_data.csv"))
-team_data <- nflreadr::load_teams()
 
 # individuality check ----
 data_2023 %>%
@@ -32,7 +31,34 @@ modeling_data <- data_2023 %>%
   filter(between(week, 1, 17),
          !is.na(down),
          play_type %in% c("pass", "run"),
-         aborted_play == 0) %>%
+         aborted_play == 0) %>% # Play must count
+  
+  mutate(
+  
+  ) %>%
+  
+  # last play call and its success  
+  group_by(posteam, game_id) %>%
+  mutate(
+    cum_epa = lag(cumsum(epa)),
+    game_rush_epa = 
+    
+    last_play = lag(play_type),
+    last_play_success = lag(epa),
+    
+    n_pass = cumsum(pass),
+    n_run = cumsum(rush),
+    
+    game_3rd_conversion = cumsum(third_down_converted) / (cumsum(third_down_converted) + cumsum(third_down_failed))
+  ) %>%
+  ungroup()
+  
+  # rolling play call ratio + for the season
+
+
+  
+  # avg play call success
+
   
   # Choosing variables to work with
   select(posteam, defteam, posteam_type, posteam_score, defteam_score, yardline_100, down, ydstogo,
