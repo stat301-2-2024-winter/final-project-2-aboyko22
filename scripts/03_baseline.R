@@ -5,15 +5,16 @@
 library(tidyverse)
 library(tidymodels)
 library(here)
+library(doMC)
 
 tidymodels_prefer()
-
-# NOTE ----
-# None of this is saved out because the folds will be rewritten
-# Not traditional practice
+registerDoMC(cores = 6)
 
 # load data ----
-load(here("data/data_folds.rda"))
+load(here("data/data_split/data_folds.rda"))
+
+load(here("recipes/null_recipe.rda"))
+load(here("recipes/basic_recipe.rda"))
 
 # Defining Null
 null_spec <- null_model() %>%
@@ -37,16 +38,7 @@ basic_wflow <- workflow() %>%
 
 basic_fit <- fit_resamples(basic_wflow, data_folds, control = control_resamples(save_workflow = FALSE))
 
-id <- tibble(id = c('null', "basic"))
-null_results <- collect_metrics(null_fit) %>% select(.metric, mean, n, std_err)      
-basic_results <- collect_metrics(basic_fit) %>% select(.metric, mean, n, std_err)  
 
-baseline_results <- rbind(null_results, basic_results) %>%
-  filter(.metric == "accuracy") %>%
-  bind_cols(id) %>% relocate(id)
-  
-
-save(baseline_results, file = here("memos/memo_files/baseline_results.rda"))
-
-
-# To Do List ----
+# Save out fits  
+save(null_fit, file = here("results/null_fit.rda"))
+save(basic_fit, file = here("results/basic_fit.rda"))
