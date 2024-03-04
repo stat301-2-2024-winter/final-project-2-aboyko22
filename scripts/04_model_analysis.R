@@ -9,8 +9,12 @@ library(here)
 tidymodels_prefer()
 
 # load data ----
+load(here("results/standard_boosted_fit.rda"))
 load(here("results/full_boosted_fit.rda"))
 
 # To Do List ----
-full_boosted_fit %>%
-  select_best(metric = "accuracy")
+as_workflow_set(
+  f_bt = full_boosted_fit,
+  s_bt = stamd
+)
+

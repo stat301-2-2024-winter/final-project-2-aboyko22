@@ -1,6 +1,8 @@
 ## Boosted Tree Script
 ## Purpose: Create, tune, and fit boosted tree model
 
+# 20:27 computation time
+
 # load packages ----
 library(tidyverse)
 library(tidymodels)
@@ -38,8 +40,8 @@ full_boosted_grid <- grid_regular(full_boosted_parameters, levels = 5)
 set.seed(42131)
 full_boosted_fit <- full_boosted %>%
   tune_grid(data_folds, grid = full_boosted_grid,
-            control = control_grid(save_workflow = FALSE,
-                                   save_pred = FALSE))
+            control = control_grid(save_workflow = TRUE,
+                                   save_pred = TRUE))
 
 # Note: Saving predictions is ideal, but computationally hard
 # For the final model, I would like to have them for analysis
