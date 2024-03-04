@@ -28,3 +28,9 @@ basic_recipe %>%
   bake(new_data = NULL) %>% view()
 
 # To Do List ----
+
+# 4 recipes
+# - linear model
+#  + variant
+# - tree model
+#  + variant

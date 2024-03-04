@@ -3,15 +3,15 @@ library(tidyverse)
 library(nflverse)
 library(scales)
 library(here)
-library(tidymodels)
+library(naniar)
 
 # load data ----
 data_2023 <- load_pbp(2023) %>% # only run once
   filter(season_type == "REG") # only run once
 
-write_csv(data_2023, file = here("data/raw_data.csv")) # only run once
+write_csv(data_2023, file = here("data/raw_data/raw_data.csv")) # only run once
 
-data_2023 <- read_csv(here("data/raw_data.csv"))
+data_2023 <- read_csv(here("data/raw_data/raw_data.csv"))
 
 # individuality check ----
 data_2023 %>%
@@ -31,17 +31,16 @@ modeling_data <- data_2023 %>%
   filter(between(week, 1, 17),
          !is.na(down),
          play_type %in% c("pass", "run"),
-         aborted_play == 0) %>% # Play must count
-  
-  mutate(
-  
-  ) %>%
-  
-  # last play call and its success  
+         aborted_play == 0) %>%
+
+  # game stats
   group_by(posteam, game_id) %>%
   mutate(
-    cum_epa = lag(cumsum(epa)),
-    game_rush_epa = 
+    rush_epa = if_else(rush == 1, epa, 0),
+    pass_epa = if_else(pass == 1, epa, 0),
+    
+    game_rush_epa = cumsum(rush_epa),
+    game_pass_epa = cumsum(pass_epa),
     
     last_play = lag(play_type),
     last_play_success = lag(epa),
@@ -49,46 +48,51 @@ modeling_data <- data_2023 %>%
     n_pass = cumsum(pass),
     n_run = cumsum(rush),
     
-    game_3rd_conversion = cumsum(third_down_converted) / (cumsum(third_down_converted) + cumsum(third_down_failed))
-  ) %>%
-  ungroup()
-  
-  # rolling play call ratio + for the season
-
-
-  
-  # avg play call success
-
-  
-  # Choosing variables to work with
-  select(posteam, defteam, posteam_type, posteam_score, defteam_score, yardline_100, down, ydstogo,
-         goal_to_go, qtr, half_seconds_remaining, score_differential, fg_prob, safety_prob, td_prob,
-         epa, total_home_rush_epa, total_home_pass_epa, total_away_rush_epa, total_away_pass_epa, drive,
-         posteam_timeouts_remaining, third_down_converted, third_down_failed, wp, game_date, xpass, pass, play_type) %>%
-    # fix variable types
-  mutate(qtr = factor(qtr),   
-         down = factor(down),
-         month = factor(month(game_date))) %>%
-  select(-game_date)
+    game_3rd_conversion = cumsum(third_down_converted) / (cumsum(third_down_converted) + cumsum(third_down_failed)),
     
-# initial split ---- 
+    rush_success = game_rush_epa / n_run,
+    pass_success = game_pass_epa / n_pass) %>%
+  ungroup() %>%
+  
+  # season stats
+  group_by(posteam) %>%
+  mutate(pass_ratio = cumsum(pass) / (cumsum(pass) + cumsum(rush)),
+         avg_season_success = cumsum(epa) / cumsum(play),
+         season_3rd = cumsum(third_down_converted) / (cumsum(third_down_converted) + cumsum(third_down_failed))) %>%
+  ungroup() %>%
 
-# This is not the format this should be completed in
-# Folds/Split will have to occur again later
-# Only for null and baseline model
+  # Choosing variables to work with
+  select(posteam, defteam, posteam_type, posteam_score, defteam_score, score_differential, down,
+         ydstogo, goal_to_go, yardline_100, qtr, half_seconds_remaining, drive, posteam_timeouts_remaining,
+         fg_prob, safety_prob, td_prob, rush_epa, pass_epa, game_rush_epa, game_pass_epa, last_play,
+         last_play_success, game_3rd_conversion, pass_ratio, avg_season_success, season_3rd, wp, game_date,
+         xpass, pass, play_type) %>%
+    
+    # fix variable types
+  mutate(posteam_type = factor(posteam_type),
+         qtr = factor(qtr),   
+         down = factor(down),
+         month = factor(month(game_date)),
+         play_type = factor(play_type)) %>%
+  select(-game_date)
 
-set.seed(1703)
-data_split <- initial_split(modeling_data, prop = 0.80, strata = play_type)
+naniar::miss_var_summary(modeling_data) %>% print(n = 32)
 
-training_data <- training(data_split)
-testing_data <- testing(data_split)
+# 3 new variables creating missing values
+# 3rd down and last play variables
+# Rather than impute later, fix these now
+# One edge case (fumble on first play of game nyj vs. atl)
 
-data_folds <- vfold_cv(training_data, v = 10, repeats = 3, strata = play_type)
+modeling_data <- modeling_data %>%
+  mutate(last_play = factor(if_else(is.na(last_play), "drive_start", last_play)),
+         last_play_success = if_else(is.na(last_play_success), avg_season_success, last_play_success),
+         season_3rd = if_else(is.na(season_3rd), 0.388, season_3rd), # nfl average 2023
+         game_3rd_conversion = if_else(is.na(game_3rd_conversion), season_3rd, game_3rd_conversion))
 
-# save out files
-save(training_data, file = here("data/training_data.rda"))
-save(testing_data, file = here("data/testing_data.rda"))
-save(data_folds, file = here("data/data_folds.rda"))
+skimr::skim_without_charts(modeling_data)
+    
+# save out cleaned data
+save(modeling_data, file = here("data/cleaned_data/cleaned_data.rda"))
 
 # id null results ----
 modeling_data %>%
@@ -118,12 +122,3 @@ modeling_data %>%
   scale_y_continuous(labels = comma)
 
 ggsave(filename = "play_type.jpg", path = here("plots/"))
-
-
-# 4 recipes
-# - linear model
-#  + variant
-# - tree model
-#  + variant
-
-
