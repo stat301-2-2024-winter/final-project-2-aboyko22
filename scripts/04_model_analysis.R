@@ -20,6 +20,3 @@ best_models <- as_workflow_set(
   filter(.metric == "accuracy") %>%
   slice_max(mean, by = wflow_id)
 
-# full model is WAY too accurate (97%), must be semi ID variable
-# make sure rush_epa, pass_epa etc. are lagged
-

@@ -63,14 +63,14 @@ standard_dummy_recipe <- training_data %>%
 full_recipe <- recipe(training_data, play_type ~.) %>%
     update_role(pass, new_role = "id") %>%
     update_role(xpass, new_role = "id") %>%
-  step_rm(posteam, defteam) %>%
+  step_rm(posteam, defteam, pass_epa, rush_epa) %>%
   step_zv() %>%
   step_normalize()
 
 full_dummy_recipe <- recipe(training_data, play_type ~.) %>%
     update_role(pass, new_role = "id") %>%
     update_role(xpass, new_role = "id") %>%
-  step_rm(posteam, defteam) %>%
+  step_rm(posteam, defteam, pass_epa, rush_epa) %>%
   step_dummy(all_nominal_predictors()) %>%
   step_zv() %>%
   step_normalize()

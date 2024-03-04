@@ -1,7 +1,8 @@
 ## Boosted Tree Script
 ## Purpose: Create, tune, and fit boosted tree model
 
-# 20:27 computation time
+# 10:16 computation time
+# Run alone
 
 # load packages ----
 library(tidyverse)
