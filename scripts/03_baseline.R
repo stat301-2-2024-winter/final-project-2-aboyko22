@@ -1,6 +1,10 @@
 ## Baseline Model Script
 ## Purpose: Develop baseline models (null & basic)
 
+# For future reference
+# Not saving predictions during this stage
+# Computation
+
 # load packages ----
 library(tidyverse)
 library(tidymodels)
@@ -25,7 +29,9 @@ null_wflow <- workflow() %>%
   add_recipe(null_recipe) %>%
   add_model(null_spec)
 
-null_fit <- fit_resamples(null_wflow, data_folds, control = control_resamples(save_workflow = FALSE))
+null_fit <- fit_resamples(null_wflow, data_folds,
+                          control = control_resamples(save_workflow = FALSE,
+                                                      save_pred = FALSE))
 
 # Defining Basic Recipe
 basic_spec <- logistic_reg(penalty = 0.01) %>%
@@ -36,9 +42,10 @@ basic_wflow <- workflow() %>%
   add_recipe(basic_recipe) %>%
   add_model(basic_spec)
 
-basic_fit <- fit_resamples(basic_wflow, data_folds, control = control_resamples(save_workflow = FALSE))
-
-
+set.seed(9554)
+basic_fit <- fit_resamples(basic_wflow, data_folds,
+                           control = control_resamples(save_workflow = FALSE,
+                                                       save_pred = FALSE))
 # Save out fits  
 save(null_fit, file = here("results/null_fit.rda"))
 save(basic_fit, file = here("results/basic_fit.rda"))
