@@ -9,5 +9,6 @@ library(here)
 tidymodels_prefer()
 
 # load data ----
+load(here("data/data_split/testing_data.rda"))
 
 # To Do List ----

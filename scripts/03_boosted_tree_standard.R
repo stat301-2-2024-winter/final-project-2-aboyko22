@@ -42,10 +42,5 @@ standard_boosted_fit <- standard_boosted %>%
   tune_grid(data_folds, grid = standard_boosted_grid,
             control = control_grid(save_workflow = TRUE,
                                    save_pred = TRUE))
-
-# Note: Saving predictions is ideal, but computationally hard
-# For the final model, I would like to have them for analysis
-# But for now, I am choosing not to save them to save time/effort
-
 # Save out fits
 save(standard_boosted_fit, file = here("results/standard_boosted_fit.rda"))
