@@ -19,7 +19,7 @@ best_models <- as_workflow_set(
   f_bt = full_boosted_fit,
   s_bt = standard_boosted_fit,
   f_knn = full_knn_fit,
-  s_knn = stand) %>%
+  s_knn = standard_knn_fit) %>%
   collect_metrics() %>%
   filter(.metric == "accuracy") %>%
   slice_max(mean, by = wflow_id)

@@ -27,6 +27,14 @@ citation-location: margin
 
 :::
 
+::: {.callout-caution}
+
+Current progress: KNN and Boosted Tree models fitted.
+
+To do tomorrow: Fit rest of models and choose final model type
+
+:::
+
 ## Introduction
 Introduce your problem(s)/objective(s). Discuss why you are trying to predict this variable (motivation). Why is this useful? Describe the data source(s) you will use to build a predictive model. If you are obtaining information from websites you should site those in your References.
 
