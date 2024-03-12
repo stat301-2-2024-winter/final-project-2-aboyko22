@@ -1,6 +1,8 @@
 ## Random Forest Script
 ## Purpose: Create, tune, and fit random forest model
 
+# Computation time: 9:51:22
+
 # load packages ----
 library(tidyverse)
 library(tidymodels)
@@ -14,9 +16,29 @@ registerDoMC(cores = 6)
 load(here("data/data_split/data_folds.rda"))
 load(here("recipes/full_recipe.rda"))
 
-# To Do List ----
+# Defining Random Forest
+rf_spec <- rand_forest(mtry = tune(), min_n = tune(), trees = 1500) %>%
+  set_engine("ranger") %>%
+  set_mode("classification")
 
-# Create spec and workflow
-# Define tuning parameters
-# Fit to resamples
-# Save out files
+full_rf <- workflow() %>%
+  add_model(rf_spec) %>%
+  add_recipe(full_recipe)
+
+# Hyperparameter Tuning
+extract_parameter_set_dials(rf_spec)
+
+full_rf_parameters <- parameters(rf_spec) %>%
+  update(mtry = mtry(c(4, 18)),
+         min_n = min_n(c(4, 20)))
+
+full_rf_grid <- grid_regular(full_rf_parameters, levels = 4)
+
+# Fitting the Models
+set.seed(32011)
+full_forest_fit <- full_rf %>%
+  tune_grid(data_folds, grid = full_rf_grid,
+            control = control_grid(save_workflow = TRUE,
+                                   save_pred = TRUE))
+# Save out fits
+save(full_forest_fit, file = here("results/full_forest_fit.rda"))
