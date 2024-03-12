@@ -15,8 +15,8 @@ load(here("data/data_split/training_data.rda"))
 load(here("results/full_forest_fit.rda")) # Best model fit, check standard too
 
 # Defining Final Model
-final_wflow <- extract_workflow(select_best(full_forest_fit),
-                                metric = "accuracy")
+final_wflow <- extract_workflow(full_forest_fit) %>%
+  finalize_workflow(select_best(full_forest_fit, metric = "accuracy"))
 
 set.seed(12175)
 final_fit <- fit(final_wflow, training_data)
