@@ -1,6 +1,8 @@
 ## Random Forest Script
 ## Purpose: Create, tune, and fit random forest model
 
+# Computation time: 7:40:19
+
 # load packages ----
 library(tidyverse)
 library(tidymodels)
