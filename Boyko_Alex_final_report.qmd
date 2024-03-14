@@ -161,6 +161,12 @@ Particularly when a pass is expected, like 3rd or 4th down with more than a few 
 
 Compared to the other model, it did worse in crucial situations like goal-to-go and third down, but did noticeably better in the most common situation: 1st and 10.
 
+```{r, echo=FALSE}
+
+knitr::include_graphics(here("plots/unpredictability_plot.jpg"))
+knitr::include_graphics(here("plots/error_plot.jpg"))
+```
+
 ## Conclusion
 
 Overall, this project was able to yield a model that produced similar, if not slightly better results, than the model built into the `nflverse` dataset. However, there is room for improvement in accuracy by utilizing more information within the dataset, furthering tuning and feature engineering efforts, supplementing with additional information, and limiting the scope of the predictions.
