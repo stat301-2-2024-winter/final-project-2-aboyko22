@@ -43,6 +43,7 @@ During the initial EDA, the `play_type` variable was examined to ensure that the
 
 ```{r, echo=FALSE}
 library(tidyverse)
+library(tidymodels)
 library(here)
 
 ```
@@ -124,6 +125,16 @@ final_model_results %>% knitr::kable()
 ```
 
 # CONFUSION MATRIX
+```{r, echo=FALSE}
+load(here("results/total_predictions.rda"))
+total_predictions <- total_predictions %>%
+  mutate(prediction = factor((prediction)))
+
+conf_mat(total_predictions, truth = play_type, estimate = .pred_class)
+
+conf_mat(total_predictions, truth = play_type, estimate = prediction)
+
+```
 
 The `random forest computer` model performed almost identically in accuracy, which makes sense with the initial standard error values being so low. Also, now that the final model is being assessed, other metrics have been included. Namely, the gap between the RMSE and MAE values are of note.
 
@@ -165,6 +176,9 @@ Compared to the other model, it did worse in crucial situations like goal-to-go 
 
 knitr::include_graphics(here("plots/unpredictability_plot.jpg"))
 knitr::include_graphics(here("plots/error_plot.jpg"))
+knitr::include_graphics(here("plots/accuracy_rates.jpg"))
+knitr::include_graphics(here("plots/qtr_prediction.jpg"))
+knitr::include_graphics(here("plots/scatterplot.jpg"))
 ```
 
 ## Conclusion

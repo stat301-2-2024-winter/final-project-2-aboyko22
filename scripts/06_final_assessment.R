@@ -25,14 +25,13 @@ class_results <- predictions %>%
   select(.pred_class, play_type) %>%
   class_metrics(truth = play_type, estimate = .pred_class)
 
-conf_mat(predictions, truth = play_type, estimate = .pred_class)
-
 # new xpass ----
 prob_metrics <- metric_set(rmse, mae, rsq)
 
 prob_results <- prob_predictions %>%
-  select(.pred_pass, pass) %>%
-  prob_metrics(truth = pass, estimate = .pred_pass)
+  select(.pred_pass, play_type) %>%
+  mutate(play_type = if_else(play_type == "pass", 1, 0)) %>%
+  prob_metrics(truth = play_type, estimate = .pred_pass)
 
 final_model_results <- rbind(class_results, prob_results) %>%
   select(-.estimator)
@@ -41,14 +40,14 @@ save(final_model_results, file = here("results/final_model_results.rda"))
 load(here("results/final_model_results.rda"))
 
 xpass_results <- predictions %>%
-  mutate(prediction = factor(if_else(xpass >= 0.50, 1, 0)),
-         pass = factor(pass)) %>%
-  select(prediction, pass) %>%
-  class_metrics(truth = pass, estimate = prediction)
+  mutate(prediction = factor(if_else(xpass >= 0.50, "pass", "run"))) %>%
+  select(prediction, play_type) %>%
+  class_metrics(truth = play_type, estimate = prediction)
 
 xpass_prob_results <- prob_predictions %>%
-  select(xpass, pass) %>%
-  prob_metrics(truth = pass, estimate = xpass)
+  select(xpass, play_type) %>%
+  mutate(play_type = if_else(play_type == "pass", 1, 0)) %>%
+  prob_metrics(truth = play_type, estimate = xpass)
 
 xpass_final_results <- rbind(xpass_results, xpass_prob_results) %>%
   select(-.estimator)
@@ -83,7 +82,7 @@ predictions <- predictions %>%
             between(ydstogo, 3, 7) ~ "Medium",
             .default = "Long"),
     match = if_else(.pred_class == play_type, 1, 0),
-    prediction = if_else(xpass >= 0.5, 1, 0),
+    prediction = if_else(xpass >= 0.5, "pass", "run"),
     xpass_match = if_else(prediction == pass, 1, 0))
 
 faceted_plot <- predictions %>%
@@ -91,6 +90,7 @@ faceted_plot <- predictions %>%
   geom_bar(show.legend = FALSE) +
   facet_grid(vars(distance), vars(down), scales = "free") +
   theme_fivethirtyeight() +
+  theme(plot.title.position = "plot") +
   scale_fill_manual(values = c("darkred", "darkgreen")) +
   labs(title = "Prediction Accuracy by Down and Distance")
 
@@ -134,9 +134,9 @@ ggsave("accuracy_rates.jpg", path = here("plots/"))
 total_predictions <- predictions %>%
     left_join(prob_predictions) %>%
     mutate(model_error = if_else(match == 1, 0, 
-                                 if_else(pass == 1, .pred_run, .pred_pass)), 
+                                 if_else(play_type == "pass", .pred_run, .pred_pass)), 
           xpass_error = if_else(xpass_match == 1, 0,
-                                 if_else(pass == 1, 1 - xpass, xpass)))
+                                 if_else(play_type == "pass", 1 - xpass, xpass)))
     
 error_plot <- total_predictions %>%           
   ggplot() +
@@ -156,7 +156,7 @@ ggsave("error_plot.jpg", path = here("plots/"))
 
 ## Unpredictability Plot ----
 unpredictability <- total_predictions %>%
-  mutate(epa = if_else(pass == 1, pass_epa, rush_epa)) %>%
+  mutate(epa = if_else(play_type == "pass", pass_epa, rush_epa)) %>%
   summarize(avg_success = mean(epa),
             model_unpredictability = mean(model_error),
             xpass_unpredictability = mean(xpass_error),
@@ -167,7 +167,8 @@ unpredictability_plot <- unpredictability %>%
   ggplot(aes(x = avg_success, y = model_difference)) +
   geom_smooth(method = "lm", se = FALSE, color = "red", lty = 3) +
   geom_label(aes(label = posteam)) +
-  theme_fivethirtyeight() + theme(axis.title = element_text()) +
+  theme_fivethirtyeight() + theme(axis.title = element_text(),
+                                  plot.title.position = "plot") +
   scale_y_continuous(labels = scales::percent) +
   labs(x = "Average Success (EPA/Play)", y = "Difference in Model Accuracies",
        title = "Relationship Between Model Differences and Success")
@@ -217,6 +218,8 @@ total_predictions %>%
   labs(x = "Expected Pass Probability",
        y = "Model Pass Probability")
 
+ggsave(filename = "scatterplot.jpg", path = here("plots/"))
+
 total_predictions %>%
   filter(between(xpass, 0.40, 0.55),
          .pred_pass > 0.75 | .pred_pass < 0.15) %>%
@@ -240,8 +243,17 @@ faceted_table <- predictions %>%
   select(-accuracy.y) %>%
   arrange(down, distance)
 
+total_predictions %>%
+  filter(play_type == "run" & pass == 1) %>%
+  count(.pred_class)
+
+# REMEMBER
+# PASS is not the same as PLAY TYPE
+# PASS INCLUDES QB SCRAMBLES, PLAY TYPE CALLS THEM RUNS
+
 
 save(faceted_table, file = here("results/faceted_table.rda"))
+save(total_predictions, file = here("results/total_predictions.rda"))
 
 # Pass Percents ----
 predictions %>% count(.pred_class) # 0.588
