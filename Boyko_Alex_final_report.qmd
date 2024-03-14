@@ -48,55 +48,97 @@ library(here)
 ```
 
 ## Methods
+
+::: {.callout-tip}
+
 *Should cover the data splitting procedure and clearly identify what type of prediction problem it is. State and describe the model types you will be fitting. Describe any parameters that will be tuned. Describe what recipes will be used. Describe the resampling technique used. In some cases an extended discussion about recipe variations might be useful. Especially if students are using recipe variation to try and explore the predictive importance of certain variables. Explain the metric that will be used to compare and ultimately used to select a final model.*
+
+:::
 
 Once the data was cleaned and prepared, more on that below, the data was initially split into an 80-20 proportion of training and testing sets, respectively. Resamples were then created from the training set using the cross-validation v-folding function `vfold_cv`, with four repeats and 10 partitions generating 40 different folds of the data. These folds were then used to fit the following model types.
 
+All in all, 31,825 total plays were split into a training set of 25,459 and a testing set of 6,366. These plays exclusively come from the regular season the 2023 NFL campaign, and excludes Week 18, as this is a time where many team decide to rest their starters and significantly alter the way they play.
+
 ### Recipes
-Four recipes types were used, corresponding to different levels of information
+Four recipes types were used, corresponding to different levels of information.
 
 #### The Null
-This recipe is pretty self-explanatory. Without any features, the most accurate prediction we can make is to see if runs or passes happen more often, and simply always choose the more-frequent one.
+This recipe is pretty self-explanatory. Without any features, the most accurate prediction we can make is to see if runs or passes happen more often, and simply always choose the more-frequent one. In this case, that would mean always predicting a pass.
 
 #### The Casual Fan
-I set this aside with the intention of these being at about the same level as a new or casual football fan. Any information at their disposal must be visible on a TV broadcast. These include predictors like down and distance, field positioning, time, and score.
+Any information used in this recipe must be visible on a TV broadcast. These include predictors like down and distance, field positioning, quarter number, and score differential.
 
 These two recipes, once fit to their respective models, are intended to serve as baselines. It is not expected that these will perform as well as the following recipes, but serve an important purpose as they help determine the effectiveness of the other models and will maintain information relevant to potential questions of inference later on.
 
 #### The Coach
-I set this aside with the intention of these being at about the same level as a new or casual football fan. Any information at their disposal must be visible on a TV broadcast. These include predictors like down and distance, field positioning, time, and score.
+This sets a baseline for what I believe to a reasonable accuracy rate for a person predicting plays just before they happen without any external aid. The recipe attempts to account for trends that a coach would know off-hand, like offensive 3rd down efficiency, goal-to-go scenarios, the last play that was ran, and other important external conditions. Any highly specific numbers and figures are not expected to be known.
 
 #### The Computer
-I set this aside with the intention of these being at about the same level as a new or casual football fan. Any information at their disposal must be visible on a TV broadcast. These include predictors like down and distance, field positioning, time, and score.
+With all of the intricate details of the data set, there are a lot of exact measurements that can be used that a person may be able to closely intuit, but not fully know. This recipe uses all the information the coach recipe has, but also includes rolling success rates throughout the game and previous play-calling patterns, pre-snap probabilities of various drive outcomes and overall win likelihood, and season trends.
+
+Both of these recipes are still much more simple than what factors into real decision making, but they are limited both intentionally and unintentionally by the constraints of the data set. These recipes have both alternate versions where categorical variables are dummied or not dummied so they can be used on the following model types.
 
 ### Models
 Aside from the null model specification, courtesy of `parsnip`, four other model types were used.
 
 #### Logistic Regression
-Tunes: none
+This model type was used only for the casual fan baseline. The specific engine is `glmnet` and the model was run with a 0.01 penalty value. No hyperparameters were tuned for this model. 
+
 #### K Nearest Neighbors
-Tunes: neighbors
+The k-nearest numbers engine is `kknn`. The `neighbors` hyperparameter was tuned across a range of 10 to 100 across 10 levels.
+
 #### Boosted Tree
-Tunes: min_n, mtry, and learn rate
+The boosted tree engine used was `xgboost`, and all three of `min_n`, `mtry`, and `learn_rate` were tuned. Five levels were used for each, with the default range used for `min_n`, a range of 1 to 8 or 15 for `mtry`, since the two recipes have different numbers of total variable used, and a range of -2 to -0.2 for the learn rate.
+
 #### Random Forest
-Tunes: mtry and min_n
+Finally, the random forest models were created using the `ranger` engine, and the `min_n` and `mtry` parameters were once again tuned, with `min_n` ranges of 2 to 10 and 4 to 18 and an `mtry` range of 4 to 20.
+
+The results of all of these models were tabulated and judged in effectiveness using the accuracy metric and its standard error.
 
 ## Model Building & Selection
+
+::: {.callout-tip}
+
 *Should reiterate the metric that will be used to compare models and determine which will be the final/winning model. Include a table of the best performing model results. Review and analysis of tuning parameters should happen here. Should further tuning be explored? Or how should tuning be adjusted when fitting data like this in the future. This would be a good section to describe what the best parameters were for each model type. Could include a discussion comparing any systematic differences in performance between model types or recipes. If variations in recipes were used to explore predictive importance of certain variables, then it should be discussed here. The section will likely end with the selection of the final/winning model (provide your reasoning). Was it surprising or not surprising that this particular model won? Explain.*
+
+:::
 
 ```{r, echo=FALSE}
 load(here("results/best_models.rda"))
-
 best_models %>% knitr::kable()
-knitr::include_graphics("plots/accuracy_plot.jpg")
+
 ```
 
+Here is what these results look like in plot form, with point estimates and error bars streching one standard error above and below it.
+
+```{r, echo=FALSE}
+knitr::include_graphics("plots/accuracy_plot.jpg")
+
+```
 
 ## Final Model Analysis
+
+::: {.callout-tip}
+
 *This is where you fit your final/winning model to the testing data. Assess the final model’s performance with at least the metric used to determine the winning model, but it is also advisable to use other performance metrics (especially ones that might be easier to communicate/understand). Should include an exploration of predictions vs the true values (graph) or a confusion matrix (table). Remember to consider the scale of your outcome variable at this time — did you transform the target variable? If a transformation was used, then you should consider conducting analyses on both the original and transformed scale of the target variable. Is the model any good? It might be the best of the models you tried, but does the effort of building a predictive model really pay off — is it that much better than a baseline/null model? Were there any features of the model you selected that make it the best (e.g. fits nonlinearity well)?*
 
+:::
+
+So, the workflow from the best performing random forest model using the `computer` recipe type, which had a `mtry` parameter of 8 and a `min_n` of 20, was used to fit the final model.
+
 ## Conclusion
+
+::: {.callout-tip}
+
 *State any conclusions or discoveries/insights. This is a great place for future work, new research questions, and next steps.*
 
+:::
+
 ## References
+
+::: {.callout-tip}
+
 *Any references used should be sited here. This includes but is not limited to where you got your data. There is no “formal” reference guideline but we recommend APA format. Example: Lastname, F. M. (Year, Month Date). Title of page. Site name. URL*
+
+:::
+

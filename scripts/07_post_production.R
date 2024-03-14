@@ -16,6 +16,7 @@ load(here("data/cleaned_data/cleaned_data.rda"))
 load(here("results/final_fit.rda"))
 load(here("recipes/full_recipe.rda"))
 load(here("results/best_models.rda"))
+load(here("data/data_split/training_data.rda"))
 
 # info about data ----
 modeling_data %>%
