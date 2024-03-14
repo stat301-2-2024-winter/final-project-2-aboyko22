@@ -105,17 +105,17 @@ predictions %>%
   mutate(diff_percent = (mean_accuracy - mean_xpass_accuracy) * 100) %>%
   arrange(-diff_percent) %>% view()
 
-predictions %>%
+qtr_plot <- predictions %>%
   mutate(qtr = if_else(qtr == 5, "OT", qtr)) %>%
   ggplot(aes(x = .pred_class, fill = factor(match))) +
   geom_bar(show.legend = FALSE) +
   facet_grid(vars(qtr), vars(down), scales = "free") +
   theme_fivethirtyeight() +
+  theme(plot.title.position = "plot") +
   scale_fill_manual(values = c("darkred", "darkgreen")) +
   labs(title = "Prediction Accuracy by Down and Quarter")
 
-
-
+ggsave("qtr_prediction.jpg", path = here("plots/"))
 
 predictions %>%
   summarize(accuracy = mean(match), .by = posteam) %>%
@@ -123,10 +123,12 @@ predictions %>%
   geom_col(aes(color = posteam, fill = posteam), position = "stack") +
   scale_color_nfl(type = "secondary") +
   scale_fill_nfl() +
-  theme(axis.text.x = element_nfl_logo()) +
+  theme_fivethirtyeight() +
+  theme(axis.text.x = element_nfl_logo(), plot.title = element_text(hjust = 0.5)) +
   scale_y_continuous(labels = scales::percent) +
-  labs(x = "", y = "")
+  labs(x = "", y = "", title = "Accuracy Rates by Team")
 
+ggsave("accuracy_rates.jpg", path = here("plots/"))
 
 ## Diff Density plot ----
 total_predictions <- predictions %>%
@@ -152,7 +154,7 @@ error_plot <- total_predictions %>%
 
 ggsave("error_plot.jpg", path = here("plots/"))
 
-# #Unpredictability Plot ----
+## Unpredictability Plot ----
 unpredictability <- total_predictions %>%
   mutate(epa = if_else(pass == 1, pass_epa, rush_epa)) %>%
   summarize(avg_success = mean(epa),
@@ -171,6 +173,55 @@ unpredictability_plot <- unpredictability %>%
        title = "Relationship Between Model Differences and Success")
 
 ggsave("unpredictability_plot.jpg", path = here("plots/"))
+
+## EPA and Unpredictability
+# Literally no relationship
+cor_data <- total_predictions %>%
+  mutate(qtr = as.numeric(qtr),
+         down = as.numeric(down),
+         posteam_type = if_else(posteam_type == "home", TRUE, FALSE),
+         month = as.numeric(month),
+         ) %>%
+  select(-c(posteam, defteam, last_play, play_type, distance, .pred_class, goal_to_go)) 
+
+cor_matrix <- cor(cor_data) %>%
+  as_tibble()
+
+cor_matrix$var1 <- colnames(cor_matrix)
+cor_matrix <- gather(cor_matrix, key = "var2", value = "value", -var1)
+
+cor_matrix %>%
+  ggplot(aes(x = var1, y = var2, fill = value)) +
+  geom_tile(color = 'black') +
+  scale_fill_gradient2(low = "navy", mid = "white", high = "darkred", midpoint = 0, limits = c(-1, 1)) +
+  labs(x = "", y = "", fill = "Correlation") +
+  theme_fivethirtyeight() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        plot.title = element_text(size = 20, hjust = 0),
+        legend.position = "right", legend.direction = "vertical")
+
+cor_matrix %>%
+  filter(var1 == ".pred_pass") %>%
+  mutate(value = abs(value)) %>%
+  view()
+
+summary(lm(.pred_pass ~ xpass, data = total_predictions))
+
+total_predictions %>%
+  ggplot(aes(x = xpass, y = .pred_pass, color = match)) +
+  geom_point(alpha = 0.3, size = 2) +
+  theme_fivethirtyeight() +
+  theme(legend.position = "none", axis.title = element_text()) +
+  annotate(geom = "rect", xmin = 0.40, xmax = 0.55, ymax = 1, ymin = 0,
+           color = "red", alpha = 0.2) +
+  labs(x = "Expected Pass Probability",
+       y = "Model Pass Probability")
+
+total_predictions %>%
+  filter(between(xpass, 0.40, 0.55),
+         .pred_pass > 0.75 | .pred_pass < 0.15) %>%
+  summarize(n = n(),
+            .by = c(qtr, down, score_differential, distance, play_type)) %>% view()
 
 # Faceted Table ----
 xpass_table <- predictions %>%
