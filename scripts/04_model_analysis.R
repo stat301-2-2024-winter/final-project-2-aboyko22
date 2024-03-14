@@ -9,22 +9,34 @@ library(here)
 tidymodels_prefer()
 
 # load data ----
+load(here("results/null_fit.rda"))
+load(here("results/basic_fit.rda"))
 load(here("results/standard_boosted_fit.rda"))
 load(here("results/full_boosted_fit.rda"))
 load(here("results/standard_knn_fit.rda"))
 load(here("results/full_knn_fit.rda"))
+load(here("results/standard_forest_fit.rda"))
 load(here("results/full_forest_fit.rda"))
 
 # To Do List ----
 best_models <- as_workflow_set(
-  f_bt = full_boosted_fit,
-  s_bt = standard_boosted_fit,
-  f_knn = full_knn_fit,
-  s_knn = standard_knn_fit,
-  f_rf = full_forest_fit) %>%
+  null_model = null_fit,
+  casual_fan = basic_fit,
+  
+  knn_coach = standard_knn_fit,
+  knn_computer = full_knn_fit,
+  
+  boosted_coach = standard_boosted_fit,
+  boosted_computer = full_boosted_fit,
+  
+  forest_coach = standard_forest_fit,
+  forest_computer = full_forest_fit) %>%
   collect_metrics() %>%
   filter(.metric == "accuracy") %>%
-  slice_max(mean, by = wflow_id)
+  slice_max(mean, by = wflow_id) %>%
+  select(wflow_id, mean, std_err)
+
+save(best_models, file = here("results/best_models.rda"))
 
 full_forest_fit %>%
   select_best(metric = "accuracy")

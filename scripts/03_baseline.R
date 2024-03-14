@@ -30,8 +30,8 @@ null_wflow <- workflow() %>%
   add_model(null_spec)
 
 null_fit <- fit_resamples(null_wflow, data_folds,
-                          control = control_resamples(save_workflow = FALSE,
-                                                      save_pred = FALSE))
+                          control = control_resamples(save_workflow = TRUE,
+                                                      save_pred = TRUE))
 
 # Defining Basic Recipe
 basic_spec <- logistic_reg(penalty = 0.01) %>%
@@ -44,8 +44,8 @@ basic_wflow <- workflow() %>%
 
 set.seed(9554)
 basic_fit <- fit_resamples(basic_wflow, data_folds,
-                           control = control_resamples(save_workflow = FALSE,
-                                                       save_pred = FALSE))
+                           control = control_resamples(save_workflow = TRUE,
+                                                       save_pred = TRUE))
 # Save out fits  
 save(null_fit, file = here("results/null_fit.rda"))
 save(basic_fit, file = here("results/basic_fit.rda"))

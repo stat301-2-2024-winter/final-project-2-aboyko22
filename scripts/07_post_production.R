@@ -15,6 +15,28 @@ registerDoMC(cores = 6)
 load(here("data/cleaned_data/cleaned_data.rda"))
 load(here("results/final_fit.rda"))
 load(here("recipes/full_recipe.rda"))
+load(here("results/best_models.rda"))
+
+# info about data ----
+modeling_data %>%
+  ggplot(aes(x = play_type, fill = play_type)) +
+  geom_bar() +
+  labs(x = "Play Type", y = "Count") +
+  theme(legend.position = "none") +
+  scale_y_continuous(labels = comma) +
+  scale_fill_manual(values = c("navy", "darkred"))
+
+# graphing model accuracies ----
+accuracy_plot <- best_models %>%
+  ggplot(aes(x = wflow_id, y = mean)) +
+  geom_point() +
+  geom_errorbar(aes(ymin = mean - std_err, ymax = mean + std_err), width = 0.2) +
+  labs(x = "", y = "") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  
+
+ggsave(filename = "accuracy_plot.jpg", path = "plots/")
 
 # Identifying Example Team
 modeling_data %>%
