@@ -6,10 +6,10 @@ library(here)
 library(naniar)
 
 # load data ----
-data_2023 <- load_pbp(2023) %>% # only run once
+data_2023 <- nflfastR::load_pbp(2023) %>% # only run once
   filter(season_type == "REG") # only run once
 
-write_csv(data_2023, file = here("data/raw_data/raw_data.csv")) # only run once
+save(data_2023, file = here("data/raw_data/raw_data.rda")) # only run once
 
 data_2023 <- read_csv(here("data/raw_data/raw_data.csv"))
 

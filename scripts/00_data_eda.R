@@ -6,7 +6,7 @@ library(here)
 library(tidymodels)
 
 # load data ----
-data_2022 <- load_pbp(2022) %>%
+data_2022 <- nflfastR::load_pbp(2022) %>%
   filter(season_type == "REG",
          !is.na(down),
          play_type %in% c("pass", "run"))
@@ -14,6 +14,7 @@ data_2022 <- load_pbp(2022) %>%
 data_dictionary <- nflreadr::dictionary_pbp
 team_data <- nflreadr::load_teams()
 
+save(data_2022, file = here("data/raw_data/eda_data.rda"))
 save(data_dictionary, file = here("data/data_dictionary.rda"))
 
 # this data is not for the same season as the modeling process

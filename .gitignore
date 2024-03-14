@@ -31,10 +31,6 @@
 *.DS_Store
 **/.DS_Store
 
-data/*.csv
-data/raw_data.csv
-data/raw_data/raw_data.csv
-
 results/standard_boosted_fit.rda
 results/full_boosted_fit.rda
 results/standard_knn_fit.rda

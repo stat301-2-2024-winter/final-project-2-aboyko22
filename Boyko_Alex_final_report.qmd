@@ -27,6 +27,14 @@ citation-location: margin
 
 :::
 
+```{r, echo=FALSE}
+#| label: load-packages
+library(tidyverse)
+library(tidymodels)
+library(here)
+
+```
+
 ## Introduction
 In American Football (NFL), an offense can choose either to run or pass the ball when trying to move down the field and score. However, even when a discussion of play calling is reduced to a simple binary, it is still sufficiently difficult to understand what may happen on any given play.
 
@@ -35,18 +43,11 @@ Some trends have existed since the introduction of the current rules. Teams will
 These decisions are designed to be unpredictable. So, that raises the question — how accurately can we actually guess whether a team will run or pass? That is the goal of this project, to understand if predictive modeling can understand trends and patterns within this variability and see just how accurately it can predict play calls.
 
 ## Data Overview
-The data for this project comes from `nflverse`, an R package built around play-by-play data. For this project, data from 2022 was used to perform an exploratory data analysis on the set of variables and make decisions about which may have the greatest impact of predicting play calls.
+The data for this project comes from `nflverse`, an R package built around play-by-play data. Data from 2022 was used to perform an exploratory data analysis on the set of variables and make decisions about which may have the greatest impact of predicting play calls.
 
-Within this data set, `play_type` is the target variable, a factor variable that has been filtered out to be either 'run' or 'pass'. The `nflverse` package does an incredible job at keeping data clean, so missingness is not an issue. The only transformation that needs to occur is to remove observations from the data that are not runs or passes, such as special team plays and kneeldowns.
+Within this data set, `play_type` is the target variable, a factor that has been filtered out to be either 'run' or 'pass'. The `nflverse` package does an incredible job at keeping data clean, so missingness is not an issue. The only transformation that needs to occur is to remove observations from the data that are not runs or passes, such as special team plays and kneeldowns.
 
 During the initial EDA, the `play_type` variable was examined to ensure that there would be no future issues caused by a severe skewness in the observations, which is split *58.5%* pass and *41.5%* runs.
-
-```{r, echo=FALSE}
-library(tidyverse)
-library(tidymodels)
-library(here)
-
-```
 
 ## Methods
 
