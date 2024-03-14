@@ -93,8 +93,9 @@ texans_fit <- full_rf %>% fit(texans_training)
 texans_predictions <- bind_cols(predict(texans_fit, texans_testing), texans_testing)
 save(texans_predictions, file = here("results/texans_results.rda"))
 
-
+load(here("results/texans_results.rda"))
 get_metrics(texans_predictions, truth = play_type, estimate = .pred_class)
+
 
 
 

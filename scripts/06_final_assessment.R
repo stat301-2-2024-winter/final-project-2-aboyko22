@@ -61,15 +61,14 @@ prob_predictions %>%
   coord_obs_pred() +
   scale_color_brewer(palette = "Set1")
 
-prob_predictions %>%
-  ggplot(aes(xpass)) +
-  geom_density() +
-  facet_wrap(~play_type)
+density <- prob_predictions %>%
+  ggplot() +
+  geom_density(aes(x = xpass), color = "red") +
+  geom_density(aes(x = .pred_pass), color = "navy") +
+  labs(x = "Predicted Pass Probability", y = "Density") +
+  theme_minimal()
 
-prob_predictions %>%
-  ggplot(aes(.pred_pass)) +
-  geom_density() +
-  facet_wrap(~play_type)
+ggsave("density_plot.jpg", path = here("plots/"))
 
 # faceted graphs
 predictions <- predictions %>%
@@ -77,7 +76,9 @@ predictions <- predictions %>%
             between(ydstogo, 0, 2) ~ "Short",
             between(ydstogo, 3, 7) ~ "Medium",
             .default = "Long"),
-    match = if_else(.pred_class == play_type, 1, 0))
+    match = if_else(.pred_class == play_type, 1, 0),
+    prediction = if_else(xpass >= 0.5, 1, 0),
+    xpass_match = if_else(prediction == pass, 1, 0))
 
 faceted_plot <- predictions %>%
   ggplot(aes(x = .pred_class, fill = factor(match))) +
@@ -89,11 +90,22 @@ faceted_plot <- predictions %>%
 
 ggsave(filename = "faceted_plot.jpg", path = here("plots/"))
 
+xpass_table <- predictions %>%
+  summarize(accuracy = mean(xpass_match),
+            count = n(),
+            .by = c(down, distance))
+
 faceted_table <- predictions %>%
   summarize(accuracy = mean(match),
             count = n(),
             .by = c(down, distance)) %>%
+  left_join(xpass_table, by = join_by(down, distance, count)) %>%
+  mutate(accuracy_diff = accuracy.x - accuracy.y) %>%
+  rename(accuracy = accuracy.x) %>%
+  relocate(accuracy_diff, .before = count) %>%
+  select(-accuracy.y) %>%
   arrange(down, distance)
+
 
 save(faceted_table, file = here("results/faceted_table.rda"))
 
