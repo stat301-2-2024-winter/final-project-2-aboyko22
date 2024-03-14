@@ -5,6 +5,7 @@
 library(tidyverse)
 library(tidymodels)
 library(here)
+library(ggthemes)
 
 tidymodels_prefer()
 
@@ -23,16 +24,34 @@ class_results <- predictions %>%
   select(.pred_class, play_type) %>%
   class_metrics(truth = play_type, estimate = .pred_class)
 
+conf_mat(predictions, truth = play_type, estimate = .pred_class)
+
 # new xpass
-prob_metrics <- metric_set(rmse, mae, mape, rsq)
+prob_metrics <- metric_set(rmse, mae, rsq)
 
 prob_results <- prob_predictions %>%
   select(.pred_pass, pass) %>%
   prob_metrics(truth = pass, estimate = .pred_pass)
 
-xpass_results <- prob_predictions %>%
+final_model_results <- rbind(class_results, prob_results) %>%
+  select(-.estimator)
+
+save(final_model_results, file = here("results/final_model_results.rda"))
+
+xpass_results <- predictions %>%
+  mutate(prediction = factor(if_else(xpass >= 0.50, 1, 0)),
+         pass = factor(pass)) %>%
+  select(prediction, pass) %>%
+  class_metrics(truth = pass, estimate = prediction)
+
+xpass_prob_results <- prob_predictions %>%
   select(xpass, pass) %>%
   prob_metrics(truth = pass, estimate = xpass)
+
+xpass_final_results <- rbind(xpass_results, xpass_prob_results) %>%
+  select(-.estimator)
+
+save(xpass_final_results, file = here("results/xpass_final_results.rda"))
 
 # graphing results ----
 prob_predictions %>%
@@ -52,13 +71,29 @@ prob_predictions %>%
   geom_density() +
   facet_wrap(~play_type)
 
-# tabular results ----
-predictions %>%
-  mutate(predicted_pass = if_else(xpass >= 0.50, 1, 0),
-         correct_guess = if_else(predicted_pass == pass, 1, 0),
-         .keep = "used") %>%
-  summarize(accuracy = mean(correct_guess))
+# faceted graphs
+predictions <- predictions %>%
+  mutate(distance = case_when(
+            between(ydstogo, 0, 2) ~ "Short",
+            between(ydstogo, 3, 7) ~ "Medium",
+            .default = "Long"),
+    match = if_else(.pred_class == play_type, 1, 0))
 
-  
+faceted_plot <- predictions %>%
+  ggplot(aes(x = .pred_class, fill = factor(match))) +
+  geom_bar(show.legend = FALSE) +
+  facet_grid(vars(distance), vars(down), scales = "free") +
+  theme_fivethirtyeight() +
+  scale_fill_manual(values = c("darkred", "darkgreen")) +
+  labs(title = "Prediction Accuracy by Down and Distance")
 
+ggsave(filename = "faceted_plot.jpg", path = here("plots/"))
+
+faceted_table <- predictions %>%
+  summarize(accuracy = mean(match),
+            count = n(),
+            .by = c(down, distance)) %>%
+  arrange(down, distance)
+
+save(faceted_table, file = here("results/faceted_table.rda"))
 

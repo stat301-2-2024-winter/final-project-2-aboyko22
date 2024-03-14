@@ -97,11 +97,7 @@ The results of all of these models were tabulated and judged in effectiveness us
 
 ## Model Building & Selection
 
-::: {.callout-tip}
-
-*Should reiterate the metric that will be used to compare models and determine which will be the final/winning model. Include a table of the best performing model results. Review and analysis of tuning parameters should happen here. Should further tuning be explored? Or how should tuning be adjusted when fitting data like this in the future. This would be a good section to describe what the best parameters were for each model type. Could include a discussion comparing any systematic differences in performance between model types or recipes. If variations in recipes were used to explore predictive importance of certain variables, then it should be discussed here. The section will likely end with the selection of the final/winning model (provide your reasoning). Was it surprising or not surprising that this particular model won? Explain.*
-
-:::
+Here are the results from the initial model tunings and fits onto the resamples. These averages and standard errors were computed using the 40 total folds mentioned above.
 
 ```{r, echo=FALSE}
 load(here("results/best_models.rda"))
@@ -109,12 +105,20 @@ best_models %>% knitr::kable()
 
 ```
 
-Here is what these results look like in plot form, with point estimates and error bars streching one standard error above and below it.
+This is what these results look like in plot form, with point estimates and error bars stretching one standard error above and below it.
 
 ```{r, echo=FALSE}
 knitr::include_graphics("plots/accuracy_plot.jpg")
 
 ```
+
+Overall, these results look as expected given the amount of information provided in the individual recipes and the flexibility of the model types. The casual fan baseline model performed much better than the null model, increasing its accuracy by nearly 6% by only using 5 predictors. The KNN models performed even better, but the extremely flexible boosted tree and random forest models, which were also tuned the most, were in a category of their own.
+
+Similarly, there was a consistent difference between the performance of the models using the coach and computer recipes, although the gap is not as large as expected. With the standard errors all being remarkably low, this is significant, but I anticipated the recipes playing a much larger role than model specifications in accuracy results.
+
+One interesting artifact exists, with the best boosted tree model performing better than the best random forest one using the coach recipe type, but worse with the computer type. This is likely due to the increased flexibility of the random forest model engine, and with the coach recipe having significantly fewer predictors, this may have allowed it to hyperfocus on unimportant noise to a greater extent.
+
+That being said, looking at these results, the random forest with the computer recipe type performed the best. This is not surprising to me, since it took by far the longest to compute at nearly 10 hours, and its best performing set of hyperparamters will be used going forward.
 
 ## Final Model Analysis
 
@@ -126,6 +130,28 @@ knitr::include_graphics("plots/accuracy_plot.jpg")
 
 So, the workflow from the best performing random forest model using the `computer` recipe type, which had a `mtry` parameter of 8 and a `min_n` of 20, was used to fit the final model.
 
+```{r, echo=FALSE}
+load(here("results/final_model_results.rda"))
+final_model_results %>% knitr::kable()
+```
+
+
+```{r, echo=FALSE}
+knitr::include_graphics(here("plots/faceted_plot.jpg"))
+```
+
+```{r, echo=FALSE}
+load(here("results/faceted_table.rda"))
+faceted_table %>% knitr::kable()
+```
+
+Results from `nflverse` model
+
+```{r, echo=FALSE}
+load(here("results/xpass_final_results.rda"))
+xpass_final_results %>% knitr::kable()
+```
+
 ## Conclusion
 
 ::: {.callout-tip}
@@ -134,11 +160,11 @@ So, the workflow from the best performing random forest model using the `compute
 
 :::
 
+```{r, echo=FALSE}
+knitr::include_graphics(here("plots/texans_graph.jpg"))
+```
+
 ## References
 
-::: {.callout-tip}
-
-*Any references used should be sited here. This includes but is not limited to where you got your data. There is no “formal” reference guideline but we recommend APA format. Example: Lastname, F. M. (Year, Month Date). Title of page. Site name. URL*
-
-:::
+All data used in this project is coming from the `nflverse package`. I’ve provided links to the [repository](https://github.com/nflverse) and [documentation](https://nflverse.nflverse.com/) to show how this data is collected and updated.
 

@@ -27,6 +27,12 @@ modeling_data %>%
   scale_y_continuous(labels = comma) +
   scale_fill_manual(values = c("navy", "darkred"))
 
+predictions %>%
+  mutate(prediction = if_else(xpass >= 0.50, 1, 0),
+         correct = if_else(prediction == pass, 1, 0)) %>%
+  summarize(accuracy = mean(correct))
+
+
 # graphing model accuracies ----
 accuracy_plot <- best_models %>%
   ggplot(aes(x = wflow_id, y = mean)) +
@@ -40,7 +46,7 @@ accuracy_plot <- best_models %>%
 ggsave(filename = "accuracy_plot.jpg", path = "plots/")
 
 # Identifying Example Team
-modeling_data %>%
+texans_graph <- modeling_data %>%
   summarize(pass_percent = mean(pass) * 100,
             success = mean(last_play_success),
             .by = posteam) %>%
@@ -48,9 +54,15 @@ modeling_data %>%
   mutate(across(where(is.numeric), 
                 ~ replace(., n(), .[n()]/(n()-1)))) %>%
   ggplot(aes(x = pass_percent, y = success, label = posteam)) +
-  geom_label() +
   geom_smooth(method = "lm", color = "red") +
-  labs(x = "Pass Percentage", y = "Success (EPA/play)")
+  geom_label() +
+  theme_fivethirtyeight() +
+  theme(axis.title = element_text(), plot.title.position = "plot") +
+  labs(x = "Pass Percentage", y = "Success (EPA/play)",
+       title = "Scatterplot of NFL Teams by Playcalling and Success")
+
+ggsave(filename = "texans_graph.jpg", path = here("plots/"))
+
 
 # Choosing 2023 Houston Texans
 texans_data <- modeling_data %>%
