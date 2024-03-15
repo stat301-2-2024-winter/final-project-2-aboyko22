@@ -1,0 +1,47 @@
+---
+title: "Executive Summary"
+subtitle: |
+  | Final Project 
+  | Data Science 1 with R (STAT 301-2)
+author: "Alex Boyko"
+date: "03-14-2024"
+
+format:
+  html:
+    toc: true
+    embed-resources: true
+    link-external-newwindow: true
+
+execute:
+  warning: false
+  
+from: markdown+emoji 
+---
+
+The purpose of this project was to create a predictive model using data from the 2023 NFL regular season to predict whether a pass or run would happen on an offensive snap using pre-snap metrics. The data, from `nflverse`, was cleaned and reformatted with the intention of creating models with differing levels of complexity to tackle the classification problem. It was decided ahead of time that these models would be judged by their accuracy, and the most accurate would be assessed against the testing set.
+
+After the initial splitting and resampling of the data, overall, 8 models were fit spanning 4 recipes types and 5 model specifications.
+
+Other than the null, the three recipe types were meant to simulate different levels of football knowledge, corresponding to a casual fan, a coach, and a computer.
+
+The five model types included the null model, a simple logistic regression, a k-nearest numbers model, a boosted tree, and finally a random forest. The latter three underwent tuning of their hyperparameters to determine which specific set could provide the most accurate results.
+
+```{r, echo=FALSE}
+library(tidyverse)
+library(here)
+knitr::include_graphics(here("plots/accuracy_plot.jpg"))
+```
+
+After comparing the results, it was apparent that the most complex random forest performed the best, with a 70.7% accuracy rate, which reduced slightly to 70.6% when assessed against the testing set. This model was then compared to one built into the data set, which was quite similar.
+
+It was determined that the final model was more aggressive with its predictions, but in turn this allowed it to be slightly more accurate in nearly every metric. Although it performed worse is key situations like the redzone and 4th down plays, the model was significantly better at predicting calls on 1st down, particularly early in the game and plays that turned out to be runs.
+
+```{r, echo=FALSE}
+load(here("results/faceted_table.rda"))
+faceted_table %>% knitr::kable()
+```
+
+While it is unclear whether this findings are relevant or potentially helpful in supplementing the results of industry-standard models or optimizing on-field results, ideas were discussed on how this model could be improved in the future with the addition of more refined feature engineering processes and the inclusion of outside data sources.
+
+
+

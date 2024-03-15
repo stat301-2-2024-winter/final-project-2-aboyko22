@@ -36,14 +36,14 @@ library(here)
 ```
 
 ## Introduction
-In American Football (NFL), an offense can choose either to run or pass the ball when trying to move down the field and score. However, even when a discussion of play calling is reduced to a simple binary, it is still sufficiently difficult to understand what may happen on any given play.
+In American Football (NFL), an offense can choose either to run or pass the ball when trying to move down the field and score. However, even when a discussion of play calling is reduced to a simple binary classification problem, it is still sufficiently difficult to guess what may happen on any given play.
 
-Some trends have existed since the introduction of the current rules. Teams will continue to throw the ball on *3rd & Long* and run it on *4th & Inches*, but defenses know this, and part of the responsibility of calling plays is balancing playing to your strengths and following these trends with a need to go against the grain and surprise your opponent.
+Some trends have existed since the introduction of the current rules. Teams will continue to throw the ball on 3rd & Long and run it on 4th & Inches, but defenses know this, and part of the responsibility of calling plays is balancing playing to your strengths and following these trends with a need to go against the grain and surprise your opponent.
 
 These decisions are designed to be unpredictable. So, that raises the question — how accurately can we actually guess whether a team will run or pass? That is the goal of this project, to understand if predictive modeling can understand trends and patterns within this variability and see just how accurately it can predict play calls.
 
 ## Data Overview
-The data for this project comes from `nflverse`, an R package built around play-by-play data. Data from 2022 was used to perform an exploratory data analysis on the set of variables and make decisions about which may have the greatest impact of predicting play calls.
+The data for this project comes from `nflverse`, an R package built around play-by-play data. Data from 2022 was used to perform an exploratory data analysis on the set of variables and make feature engineering decisions about which may have the greatest impact of predicting play calls.
 
 Within this data set, `play_type` is the target variable, a factor that has been filtered out to be either 'run' or 'pass'. The `nflverse` package does an incredible job at keeping data clean, so missingness is not an issue. The only transformation that needs to occur is to remove observations from the data that are not runs or passes, such as special team plays and kneeldowns.
 
@@ -51,9 +51,9 @@ During the initial EDA, the `play_type` variable was examined to ensure that the
 
 ## Methods
 
-Once the data was cleaned and prepared, more on that below, the data was initially split into an 80-20 proportion of training and testing sets, respectively. Resamples were then created from the training set using the cross-validation v-folding function `vfold_cv`, with four repeats and 10 partitions generating 40 different folds of the data. These folds were then used to fit the following model types.
+Once the data was cleaned and prepared, more on that below, it was initially split into an 80-20 proportion of training and testing sets, respectively. Resamples were then created from the training set using the cross-validation v-folding function `vfold_cv`, with four repeats and 10 partitions generating 40 different folds of the data. These folds were then used to fit the following model types.
 
-All in all, 31,825 total plays were split into a training set of 25,459 and a testing set of 6,366. These plays exclusively come from the regular season of the 2023 NFL campaign, and excludes Week 18, as this is a time where many team decide to rest their starters and significantly alter the way they play. Aborted plays, where it is unclear what the outcome would have been due a penalty, fumble, or error, were also excluded.
+All in all, 31,825 total plays were split into a training set of 25,459 and a testing set of 6,366. These plays exclusively come from the regular season of the 2023 NFL campaign, and excludes Week 18, as this is a time where many teams decide to rest their starters and significantly alter the way they play. Aborted plays, where it is unclear what the outcome would have been due a penalty, fumble, or error, were also excluded.
 
 ### Recipes
 Four recipes types were used, corresponding to different levels of information that a person may have while watching a game of football. Since additional frameworks have been added to further interpretability and examine nuance with these recipe subtypes and later model specifications, the back end of these recipes was kept extremely simple to somewhat simulate real-life decision making.
@@ -204,14 +204,14 @@ Of note, the light blue represent correct predictions while the dark blue is inc
 
 Overall, this project was able to yield a model that produced similar, if not slightly better results, than the model built into the `nflverse` dataset. However, there is room for improvement in accuracy by utilizing more information within the dataset, furthering tuning and feature engineering efforts, supplementing with additional information, and limiting the scope of the predictions.
 
-These models were asked to create predictions across the entire league, encompassing all of the possible variation. For example, look at the following graph.
+These models were asked to create predictions across the entire league, encompassing all of the possible variation. This can severely hinder the accuracy of the overall model by limiting individual team predictability.
 
 ```{r, echo=FALSE}
 #| label: total-accuracies
 knitr::include_graphics(here("plots/accuracy_rates.jpg"))
 ```
 
-Some teams, like the Jets, were encapsulated greatly by these league-wide trends, with the model able to guess correctly 78% of the time. However, individual teams and play callers will adapt to their specific surroundings and adjust accordingly, and that cannot be accounted for using the final model. It is highly unlikely that the Cardinals play-calling trends ad scheme could not be better predicted than currently, at 64%, if the model did not range as broadly. This narrowing would add to the accuracy of any model, but was not included in the scope of this project for the sake of generality.
+Some teams, like the Jets, were encapsulated greatly by these league-wide trends, with the model able to guess correctly 78% of the time. However, individual teams and play callers will adapt to their specific surroundings and adjust accordingly, and that cannot be accounted for using the final model. It is highly unlikely that the Cardinals play calling trends and scheme could not be better predicted than currently, at 64%, if the model did not range as broadly. This narrowing would add to the accuracy of any model, but was not included in the scope of this project for the sake of generality.
 
 For example, here is a plot showing teams by how often they passed the ball last season and their average overall efficiency.
 
@@ -237,5 +237,5 @@ In a word, maybe. This graph shows the difference of average errors on the y axi
 
 ## References
 
-All data used in this project is coming from the `nflverse package`. I’ve provided links to the [repository](https://github.com/nflverse) and [documentation](https://nflverse.nflverse.com/) to show how this data is collected and updated.
+All data used in this project is coming from the `nflverse` package. I’ve provided links to the [repository](https://github.com/nflverse) and [documentation](https://nflverse.nflverse.com/) to show how this data is collected and updated.
 
