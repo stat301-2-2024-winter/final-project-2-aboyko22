@@ -1,11 +1,7 @@
 ## Baseline Model Script
 ## Purpose: Develop baseline models (null & basic)
 
-# For future reference
-# Not saving predictions during this stage
-# Computation
-
-# load packages ----
+# Load Packages ----
 library(tidyverse)
 library(tidymodels)
 library(here)
@@ -14,13 +10,13 @@ library(doMC)
 tidymodels_prefer()
 registerDoMC(cores = 6)
 
-# load data ----
+# Load Data ----
 load(here("data/data_split/data_folds.rda"))
 
 load(here("recipes/null_recipe.rda"))
 load(here("recipes/basic_recipe.rda"))
 
-# Defining Null
+# Defining Null ----
 null_spec <- null_model() %>%
   set_engine("parsnip") %>%
   set_mode("classification")
@@ -33,7 +29,7 @@ null_fit <- fit_resamples(null_wflow, data_folds,
                           control = control_resamples(save_workflow = TRUE,
                                                       save_pred = TRUE))
 
-# Defining Basic Recipe
+# Defining Basic Recipe ----
 basic_spec <- logistic_reg(penalty = 0.01) %>%
   set_engine('glmnet') %>%
   set_mode("classification")
@@ -46,6 +42,6 @@ set.seed(9554)
 basic_fit <- fit_resamples(basic_wflow, data_folds,
                            control = control_resamples(save_workflow = TRUE,
                                                        save_pred = TRUE))
-# Save out fits  
+# Save Out Fits ---- 
 save(null_fit, file = here("results/null_fit.rda"))
 save(basic_fit, file = here("results/basic_fit.rda"))

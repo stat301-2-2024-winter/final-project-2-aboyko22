@@ -3,7 +3,7 @@
 
 # 17:40 computation time
 
-# load packages ----
+# Load Packages ----
 library(tidyverse)
 library(tidymodels)
 library(here)
@@ -12,11 +12,11 @@ library(doMC)
 tidymodels_prefer()
 registerDoMC(cores = 6)
 
-# load data ----
+# Load Data ----
 load(here("data/data_split/data_folds.rda"))
 load(here("recipes/standard_dummy_recipe.rda"))
 
-# Defining Boosted Tree
+# Defining Boosted Tree ----
 boosted_spec <- boost_tree(min_n = tune(),
                            mtry = tune(),
                            learn_rate = tune()) %>%
@@ -27,7 +27,7 @@ standard_boosted <- workflow() %>%
   add_model(boosted_spec) %>%
   add_recipe(standard_dummy_recipe)
 
-# Hyperparameter Tuning
+# Hyperparameter Tuning ----
 extract_parameter_set_dials(boosted_spec)
 
 standard_boosted_parameters <- parameters(boosted_spec) %>%
@@ -36,11 +36,11 @@ standard_boosted_parameters <- parameters(boosted_spec) %>%
 
 standard_boosted_grid <- grid_regular(standard_boosted_parameters, levels = 5)
 
-# Fitting the Models
+# Fitting The Models ----
 set.seed(34048)
 standard_boosted_fit <- standard_boosted %>%
   tune_grid(data_folds, grid = standard_boosted_grid,
             control = control_grid(save_workflow = TRUE,
                                    save_pred = TRUE))
-# Save out fits
+# Save Out Fits ----
 save(standard_boosted_fit, file = here("results/standard_boosted_fit.rda"))

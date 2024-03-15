@@ -1,14 +1,14 @@
 ## Model Analysis Script
 ## Purpose: Check initial metrics and choose final model
 
-# load packages ----
+# Load Packages ----
 library(tidyverse)
 library(tidymodels)
 library(here)
 
 tidymodels_prefer()
 
-# load data ----
+# Load Data ----
 load(here("results/null_fit.rda"))
 load(here("results/basic_fit.rda"))
 load(here("results/standard_boosted_fit.rda"))

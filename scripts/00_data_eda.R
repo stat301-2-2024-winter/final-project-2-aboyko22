@@ -85,24 +85,11 @@ data_2022 %>%
   geom_smooth(method = "lm") +
   geom_label()
 
-# cor matrix (LATER)
 
-# data narrowing (LATER)
+
 data_2022 %>%
   summarize(pass_percentage = sum(pass) /n() * 100, .by = c(posteam_type, posteam)) %>%
   pivot_wider(names_from = posteam_type, values_from = pass_percentage) %>%
   mutate(diff = home - away) %>% view() # defteam similar results
   # I'll include it, but test in one recipe because my gut says this is noise
-
-# messing with previous game results
-# already exists within dataset
-data_2022 %>%
-  filter(home_team == "NYJ", away_team == "BAL", posteam == "NYJ") %>%
-  mutate(pass_num = cumsum(pass), run_num = cumsum(rush),
-    run_epa = if_else(play_type == "run", epa, 0),
-         pass_epa = if_else(play_type == "pass", epa, 0),
-         run_success = cumsum(run_epa) / run_num,
-         pass_sucess = cumsum(pass_epa) / pass_num) %>% view()
-
-
 
