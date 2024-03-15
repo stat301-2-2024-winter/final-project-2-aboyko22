@@ -47,47 +47,49 @@ The data for this project comes from `nflverse`, an R package built around play-
 
 Within this data set, `play_type` is the target variable, a factor that has been filtered out to be either 'run' or 'pass'. The `nflverse` package does an incredible job at keeping data clean, so missingness is not an issue. The only transformation that needs to occur is to remove observations from the data that are not runs or passes, such as special team plays and kneeldowns.
 
-During the initial EDA, the `play_type` variable was examined to ensure that there would be no future issues caused by a severe skewness in the observations, which is split *58.5%* pass and *41.5%* runs.
+During the initial EDA, the `play_type` variable was examined to ensure that there would be no future issues caused by a severe skewness in the observations, which is split *58.5%* passes and *41.5%* runs.
 
 ## Methods
 
 Once the data was cleaned and prepared, more on that below, the data was initially split into an 80-20 proportion of training and testing sets, respectively. Resamples were then created from the training set using the cross-validation v-folding function `vfold_cv`, with four repeats and 10 partitions generating 40 different folds of the data. These folds were then used to fit the following model types.
 
-All in all, 31,825 total plays were split into a training set of 25,459 and a testing set of 6,366. These plays exclusively come from the regular season the 2023 NFL campaign, and excludes Week 18, as this is a time where many team decide to rest their starters and significantly alter the way they play.
+All in all, 31,825 total plays were split into a training set of 25,459 and a testing set of 6,366. These plays exclusively come from the regular season of the 2023 NFL campaign, and excludes Week 18, as this is a time where many team decide to rest their starters and significantly alter the way they play. Aborted plays, where it is unclear what the outcome would have been due a penalty, fumble, or error, were also excluded.
 
 ### Recipes
-Four recipes types were used, corresponding to different levels of information.
+Four recipes types were used, corresponding to different levels of information that a person may have while watching a game of football. Since additional frameworks have been added to further interpretability and examine nuance with these recipe subtypes and later model specifications, the back end of these recipes was kept extremely simple to somewhat simulate real-life decision making.
 
 #### The Null
-This recipe is pretty self-explanatory. Without any features, the most accurate prediction we can make is to see if runs or passes happen more often, and simply always choose the more-frequent one. In this case, that would mean always predicting a pass.
+This recipe is pretty self-explanatory. Without any features, the most accurate prediction we can make is to see if runs or passes happen more often, and simply always choose the more frequent one. In this case, that would mean always predicting a pass.
 
 #### The Casual Fan
 Any information used in this recipe must be visible on a TV broadcast. These include predictors like down and distance, field positioning, quarter number, and score differential.
 
-These two recipes, once fit to their respective models, are intended to serve as baselines. It is not expected that these will perform as well as the following recipes, but serve an important purpose as they help determine the effectiveness of the other models and will maintain information relevant to potential questions of inference later on.
+These two recipes, once fit to their respective models, are intended to serve as baselines. It is not expected that these will perform as well as the following recipes, but serve an important purpose as they help determine the effectiveness of the other models and will maintain information relevant to potential questions of inference by relying on less flexible model specifications.
 
 #### The Coach
-This sets a baseline for what I believe to a reasonable accuracy rate for a person predicting plays just before they happen without any external aid. The recipe attempts to account for trends that a coach would know off-hand, like offensive 3rd down efficiency, goal-to-go scenarios, the last play that was ran, and other important external conditions. Any highly specific numbers and figures are not expected to be known.
+This sets a baseline for what I believe to a reasonable accuracy rate for a person predicting plays just before they happen without any external aid. The recipe attempts to account for trends that a coach would know off-hand, like offensive 3rd down efficiency, goal-to-go scenarios, the last play that was ran, and other important external conditions. Any highly specific numbers and figures are not expected to be known. In total, 14 predictors were used, which turned into 20 for one-hot encoded sub-recipes.
+
+Since some variables were created and coerced `NA` values, those were imputed before being split by me utilizing as close of proxy data as possible. The process for this can be seen in the `00_data_checks` script, and these variables are also included in the recipe below.
 
 #### The Computer
-With all of the intricate details of the data set, there are a lot of exact measurements that can be used that a person may be able to closely intuit, but not fully know. This recipe uses all the information the coach recipe has, but also includes rolling success rates throughout the game and previous play-calling patterns, pre-snap probabilities of various drive outcomes and overall win likelihood, and season trends.
+With all of the intricate details of the data set, there are a lot of exact measurements that can be used that a person may be able to closely intuit, but not fully know. This recipe uses all the information the coach recipe has, but also includes rolling success rates throughout the game and previous play-calling patterns, pre-snap probabilities of various drive outcomes and overall win likelihood, and season trends. In total, 27 predictors were used, or 35 once one-hot encoded.
 
-Both of these recipes are still much more simple than what factors into real decision making, but they are limited both intentionally and unintentionally by the constraints of the data set. These recipes have both alternate versions where categorical variables are dummied or not dummied so they can be used on the following model types.
+Both of these recipes are still much more simple than what factors into real decision making, but they are limited both intentionally and unintentionally by the constraints of the data set.
 
 ### Models
 Aside from the null model specification, courtesy of `parsnip`, four other model types were used.
 
 #### Logistic Regression
-This model type was used only for the casual fan baseline. The specific engine is `glmnet` and the model was run with a 0.01 penalty value. No hyperparameters were tuned for this model. 
+This model type was used only for the casual fan baseline. The specific engine is `glmnet` and the model was run with a 0.01 penalty value. No hyperparameters were tuned for this model, as it was intended to be a baseline and computationally simple. 
 
 #### K Nearest Neighbors
-The k-nearest numbers engine is `kknn`. The `neighbors` hyperparameter was tuned across a range of 10 to 100 across 10 levels.
+The k-nearest numbers engine is `kknn`. The `neighbors` hyperparameter was tuned across a range of 10 to 100 across 10 levels, and the model was used with both the coach and computer recipes.
 
 #### Boosted Tree
 The boosted tree engine used was `xgboost`, and all three of `min_n`, `mtry`, and `learn_rate` were tuned. Five levels were used for each, with the default range used for `min_n`, a range of 1 to 8 or 15 for `mtry`, since the two recipes have different numbers of total variable used, and a range of -2 to -0.2 for the learn rate.
 
 #### Random Forest
-Finally, the random forest models were created using the `ranger` engine, and the `min_n` and `mtry` parameters were once again tuned, with `min_n` ranges of 2 to 10 and 4 to 18 and an `mtry` range of 4 to 20.
+Finally, the random forest models were created using the `ranger` engine, and the `min_n` and `mtry` parameters were once again tuned, with `min_n` ranges of 2 to 10 and 4 to 18 and an `mtry` range of 4 to 20. Both were tuned across 4 levels, to reduce computation time (somewhat unsuccessfully), and 1500 `trees` were used for both recipes.
 
 The results of all of these models were tabulated and judged in effectiveness using the accuracy metric and its standard error.
 
@@ -96,6 +98,7 @@ The results of all of these models were tabulated and judged in effectiveness us
 Here are the results from the initial model tunings and fits onto the resamples. These averages and standard errors were computed using the 40 total folds mentioned above.
 
 ```{r, echo=FALSE}
+#| label: best-models
 load(here("results/best_models.rda"))
 best_models %>% knitr::kable()
 
@@ -104,46 +107,35 @@ best_models %>% knitr::kable()
 This is what these results look like in plot form, with point estimates and error bars stretching one standard error above and below it.
 
 ```{r, echo=FALSE}
+#| label: accuracy-plot
 knitr::include_graphics("plots/accuracy_plot.jpg")
 
 ```
 
 Overall, these results look as expected given the amount of information provided in the individual recipes and the flexibility of the model types. The casual fan baseline model performed much better than the null model, increasing its accuracy by nearly 6% by only using 5 predictors. The KNN models performed even better, but the extremely flexible boosted tree and random forest models, which were also tuned the most, were in a category of their own.
 
-Similarly, there was a consistent difference between the performance of the models using the coach and computer recipes, although the gap is not as large as expected. With the standard errors all being remarkably low, this is significant, but I anticipated the recipes playing a much larger role than model specifications in accuracy results.
+Similarly, there was a consistent difference between the performance of the models using the coach and computer recipes, although the gap is not as large as expected given the difference in the total number of predictors. With the standard errors all being remarkably low, this is a significant finding, but I anticipated the recipes playing a much larger role than model specifications in accuracy results.
 
 One interesting artifact exists, with the best boosted tree model performing better than the best random forest one using the coach recipe type, but worse with the computer type. This is likely due to the increased flexibility of the random forest model engine, and with the coach recipe having significantly fewer predictors, this may have allowed it to hyperfocus on unimportant noise to a greater extent.
 
-That being said, looking at these results, the random forest with the computer recipe type performed the best. This is not surprising to me, since it took by far the longest to compute at nearly 10 hours, and its best performing set of hyperparameters will be used going forward.
+That being said, looking at these results, the random forest with the computer recipe type performed the best, and at a vastly different level than the simple baseline models. This is not surprising to me, since it took by far the longest to compute at nearly 10 hours, and its best performing set of hyperparameters will be used going forward.
 
 ## Final Model Analysis
 
-So, the workflow from the best performing random forest model using the `computer` recipe type, which had a `mtry` parameter of 8 and a `min_n` of 20, was used to fit the final model. These are the results of the final model specification on the training set.
+So, the workflow from the best performing random forest model using the `computer` recipe type, which had a `mtry` parameter of 8 and a `min_n` of 20, was used to fit the final model. These are the results of the final model specification fit on the entire training set and assessed using predictions of the testing set.
 
 ```{r, echo=FALSE}
+#| label: final-metrics
 load(here("results/final_model_results.rda"))
 final_model_results %>% knitr::kable()
 ```
 
-# CONFUSION MATRIX
-```{r, echo=FALSE}
-load(here("results/total_predictions.rda"))
-total_predictions <- total_predictions %>%
-  mutate(prediction = factor((prediction)))
+The final random forest computer model performed almost identically in accuracy, which makes sense with the initial standard error values being so low. Also, now that the final model is being assessed, other metrics have been included. The numerical figures come from the model's computed probabilities of a given play being a pass. So, on average it was off by 38%, but the root mean square error was sizably larger. This gap between the RMSE and MAE values is noteworthy, and can help show how often the model missed by a significant margin, or was indecisive. However, the importance of the 0.05 difference between the values is hard to contextualize in isolation, even with the units being helpful.
 
-conf_mat(total_predictions, truth = play_type, estimate = .pred_class)
-
-conf_mat(total_predictions, truth = play_type, estimate = prediction)
-
-```
-
-The `random forest computer` model performed almost identically in accuracy, which makes sense with the initial standard error values being so low. Also, now that the final model is being assessed, other metrics have been included. Namely, the gap between the RMSE and MAE values are of note.
-
-The numerical figures come from the model's computed probabilities of a given play being a pass. So, on average it was off by 0.375, but the root mean square error was sizably larger. This means that the model was quite sure of itself but missed, but these numbers are difficult to contextualize in isolation.
-
-I did not mention above that `nflverse` has these probabilities built into the dataset with a column called `xpass`, short for expected pass probability. I transformed these to make run/pass predictions to compare accuracy rates and used `xpass` variable to compute the RMSE, MAE, and RSQ values.
+I did not mention above that `nflverse` has these probabilities built into the dataset using its own model with a column called `xpass`, short for expected pass probability. I transformed these to make run/pass predictions to compare accuracy rates and used the `xpass` variable to compute the RMSE, MAE, and RSQ values.
 
 ```{r, echo=FALSE}
+#| label: built-in
 load(here("results/xpass_final_results.rda"))
 xpass_final_results %>% knitr::kable()
 ```
@@ -151,18 +143,44 @@ xpass_final_results %>% knitr::kable()
 Looking at the metrics, my final model looks quite similar. The built-in model had a lower accuracy, mean absolute error, and r-squared value, but a higher RMSE. So, comparatively speaking, the final model was slightly better at making predictions by overall accuracy, but was usually wrong by more when it missed, taking larger chances.
 
 ```{r, echo=FALSE}
+#| label: density-plot
 knitr::include_graphics("plots/density_plot.jpg")
 ```
 
-Here are the two densities side by side, with the red line being the built-in model and the blue one being the final model. We can see this trend in main peak at around 0.50, which is much smaller. To humanize the xpass model, some situations were sufficiently ambiguous where it decided to minimize error by guessing near the middle, while the final model attempted to key into small details in the data, helpful or not, to make closer guesses.
-
-So, what does this mean more specifically about the final model and its ability to make predictions in specific circumstances.
+Here are the two densities of pass probabilities side by side, with the red line being the built-in model and the blue one being the final model. We can see this trend highlighed by the central peak at around `0.50`, which is much taller and narrower with the `nflverse` model. To humanize the xpass model, some situations were sufficiently ambiguous where it decided to minimize error by guessing near the middle, while the final model attempted to key into small details in the data, helpful or not, to make closer guesses, which can increase the overall MAE by guessing sufficiently wrong.
 
 ```{r, echo=FALSE}
+#| label: error-plot
+knitr::include_graphics(here("plots/error_plot.jpg"))
+```
+
+This can be seen more precisely in the above plot. The final model, when it was sure, would take the risk and push the probability towards either the extremes. Since it was overall mostly accurate, the mode of errors was very low, and very few mistakes were made since the model was almost never 40-80% sure. However, the inverse is true as well, and it made sizable errors quite frequently.
+
+
+So, what does this aggression mean more specifically about the final model and its ability to make predictions in specific circumstances, and where is it making better decisions?
+
+```{r, echo=FALSE}
+#| label: conf-matrices
+load(here("results/total_predictions.rda"))
+total_predictions <- total_predictions %>%
+  mutate(prediction = factor((prediction)))
+
+conf_mat(total_predictions, truth = play_type, estimate = .pred_class)
+conf_mat(total_predictions, truth = play_type, estimate = prediction)
+
+```
+
+Starting by looking at the confusion matrices, with the final model's results being first, the main difference can be seen in the run game. The model was much better at predicting when a run would happen, with a few more incorrect run guesses, but significantly more correctly identified runs and fewer misidentified as potential passes. On the testing set, it guessed pass 3% less than it actually occurred, while the `xpass` model predicted about 0.5% more.
+
+To break this down further, other important metrics like down and distance have been accounted for.
+
+```{r, echo=FALSE}
+#| label: faceted-plot
 knitr::include_graphics(here("plots/faceted_plot.jpg"))
 ```
 
 ```{r, echo=FALSE}
+#| label: table-results
 load(here("results/faceted_table.rda"))
 faceted_table %>% knitr::kable()
 ```
@@ -171,32 +189,51 @@ These two figures represent the same idea, with the graph showing total correct 
 
 Particularly when a pass is expected, like 3rd or 4th down with more than a few yards to go, accuracy rates were north of 80 or 90 percent. However, it struggled mightily on first down, especially in likely goal-to-go situations where the yardage is short.
 
-Compared to the other model, it did worse in crucial situations like goal-to-go and third down, but did noticeably better in the most common situation: 1st and 10.
+Compared to the other model, it did worse in crucial situations like goal-to-go and fourth down, but did noticeably better in the most common situation: 1st and 10.
 
 ```{r, echo=FALSE}
-
-knitr::include_graphics(here("plots/unpredictability_plot.jpg"))
-knitr::include_graphics(here("plots/error_plot.jpg"))
-knitr::include_graphics(here("plots/accuracy_rates.jpg"))
-knitr::include_graphics(here("plots/qtr_prediction.jpg"))
+#| label: scatterplot
 knitr::include_graphics(here("plots/scatterplot.jpg"))
 ```
+
+Taking a step back to show how important this is, above is a scatterplot of the probabilities that both models gave to every single play in the testing set. In general, the two models are in close agreement, with an overall R^2 value of about 0.78. However, the final model excelled on 1st and Long, usually in the first half, which make up the vast majority of the points at the top and bottom of the highlighted region.
+
+Of note, the light blue represent correct predictions while the dark blue is incorrect. So it makes sense to see the model getting the obvious situations correct near the tails, but these exclusively correct outliers where the `xpass` model is still uncertain represent the main difference between the two. I'm uncertain why this is the case, but the selling point of this model is its ability to predict these ambiguous situations, most often referring to correctly knowing when a team will run early in a drive, when others expect a pass.
 
 ## Conclusion
 
 Overall, this project was able to yield a model that produced similar, if not slightly better results, than the model built into the `nflverse` dataset. However, there is room for improvement in accuracy by utilizing more information within the dataset, furthering tuning and feature engineering efforts, supplementing with additional information, and limiting the scope of the predictions.
 
-These models were asked to create predictions across the entire league, encompassing all of the possible variation. However, individual teams and play callers will adapt to their specific surroundings and adjust accordingly, and that cannot be accounted for using the final model. This narrowing would add to the accuracy of any model, but was not included in the sake of this project for a sense of generality.
+These models were asked to create predictions across the entire league, encompassing all of the possible variation. For example, look at the following graph.
+
+```{r, echo=FALSE}
+#| label: total-accuracies
+knitr::include_graphics(here("plots/accuracy_rates.jpg"))
+```
+
+Some teams, like the Jets, were encapsulated greatly by these league-wide trends, with the model able to guess correctly 78% of the time. However, individual teams and play callers will adapt to their specific surroundings and adjust accordingly, and that cannot be accounted for using the final model. It is highly unlikely that the Cardinals play-calling trends ad scheme could not be better predicted than currently, at 64%, if the model did not range as broadly. This narrowing would add to the accuracy of any model, but was not included in the scope of this project for the sake of generality.
 
 For example, here is a plot showing teams by how often they passed the ball last season and their average overall efficiency.
 
 ```{r, echo=FALSE}
+#| label: texans
 knitr::include_graphics(here("plots/texans_graph.jpg"))
 ```
 
-Let's use an average team like Houston, so as not to gain an additional advantage by simply having a higher baseline or significant interaction with the efficiency features. Splitting only the Texan's offensive plays into a training and testing set and allowing the final model to refit and produce a new estimate, there is a slight increase to 71% accuracy.
+Let's use an average team like Houston, so as not to gain an additional advantage by simply having a higher baseline or significant interaction with the efficiency features. Splitting only the Texan's offensive plays into a training and testing set and allowing the final model to refit and produce a new estimate, there is a 1.5 percent jump to 71% total accuracy.
 
-I believe that including more information, in the manners mentioned above, could create a model with a theoretical total accuracy rate between 75-80%, with some teams having individual rates upward of 85%. This is an extreme jump, but I believe this project was limited in scope and while this would necessitate external data like PFF scores, personnel information, and defensive rankings and likely significantly increase computational time, these are extremely important predictors absent from the data set. This could be extremely helpful in creating more advanced "Over Expectation" variables and, if kept somewhat intuitive, could prove somewhat useful in understanding tendencies.
+Apart from this specification, including external sources of data like PFF scores to approximate individual player talent, personnel information, and defensive rankings, which are crucial predictors for real life play calling decisions, could significantly increase both the accuracy and complexity of this model.
+
+Including more information, in the manners mentioned above or otherwise, I believe could create a model with a theoretical total accuracy rate between 75-80%, with some teams having individual rates upward of 85%. This is an extreme jump, but reasonable given the amount of information the dataset cannot capture.
+
+Finally, do the differences between the predictions of the final model, in its current form, and the `nflverse` model have a practical purpose? In other words, does the comparative unpredictability mean anything about success?
+
+```{r, echo=FALSE}
+#| label: difference
+knitr::include_graphics(here("plots/unpredictability_plot.jpg"))
+```
+
+In a word, maybe. This graph shows the difference of average errors on the y axis, with positive values meaning the final model performed better than the built-in one. There's a negative trend between this difference and success, but the spread is sufficiently large. There are a few interesting points, with the model overall thriving with very bad teams and the Lions, who are known for their aggressive decision making while struggling with the Chargers, a talented team who fired their coach. This may say something about underperformance or getting into predictable, disadvantageous situations where passing is required, but the trend is murky, to say the least.
 
 ## References
 

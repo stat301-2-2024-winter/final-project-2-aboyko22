@@ -83,7 +83,7 @@ predictions <- predictions %>%
             .default = "Long"),
     match = if_else(.pred_class == play_type, 1, 0),
     prediction = if_else(xpass >= 0.5, "pass", "run"),
-    xpass_match = if_else(prediction == pass, 1, 0))
+    xpass_match = if_else(prediction == play_type, 1, 0))
 
 faceted_plot <- predictions %>%
   ggplot(aes(x = .pred_class, fill = factor(match))) +
@@ -161,7 +161,7 @@ unpredictability <- total_predictions %>%
             model_unpredictability = mean(model_error),
             xpass_unpredictability = mean(xpass_error),
             .by = posteam) %>%
-  mutate(model_difference = model_unpredictability - xpass_unpredictability)
+  mutate(model_difference = xpass_unpredictability - model_unpredictability)
 
 unpredictability_plot <- unpredictability %>%  
   ggplot(aes(x = avg_success, y = model_difference)) +

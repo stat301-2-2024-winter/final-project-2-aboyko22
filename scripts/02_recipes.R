@@ -1,9 +1,6 @@
 ## Recipe Script
 ## Purpose: Create recipes for all model types
 
-# Removed posteam and defteam
-# Will try to approximate defense somehow later
-
 # Load Packages ----
 library(tidyverse)
 library(tidymodels)
@@ -50,10 +47,6 @@ standard_dummy_recipe <- training_data %>%
   step_zv() %>%
   step_normalize()
  
-# Ideas for version 2
-#   - check if need for log/splining
-#   - ideas for interactions
-
 # standard_dummy_recipe %>%
 #   prep() %>%
 #   bake(new_data = NULL) %>% glimpse()

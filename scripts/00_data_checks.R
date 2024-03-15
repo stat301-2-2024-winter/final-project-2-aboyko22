@@ -94,15 +94,6 @@ skimr::skim_without_charts(modeling_data)
 # save out cleaned data
 save(modeling_data, file = here("data/cleaned_data/cleaned_data.rda"))
 
-# id null results ----
-modeling_data %>%
-  mutate(error = abs(pass-xpass),
-         bingo = if_else(pass == 1 & xpass > 0.50 | pass == 0 & xpass < 0.50, 1, 0)) %>%
-  summarize(x_avg = mean(xpass),
-            avg = mean(pass),
-            accuracy = mean(bingo),
-            abs_mean_err = mean(error))
-
 # checking qb scrambles ----
 data_2023 %>%
   filter(posteam == "BAL") %>%
