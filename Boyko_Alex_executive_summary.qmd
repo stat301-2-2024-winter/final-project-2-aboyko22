@@ -18,6 +18,14 @@ execute:
 from: markdown+emoji 
 ---
 
+::: {.callout-tip icon=false}
+
+## Github Repo Link
+
+[https://github.com/stat301-2-2024-winter/final-project-2-aboyko22](https://github.com/stat301-2-2024-winter/final-project-2-aboyko22)
+
+:::
+
 The purpose of this project was to create a predictive model using data from the 2023 NFL regular season to predict whether a pass or run would happen on an offensive snap using pre-snap metrics. The data, from `nflverse`, was cleaned and reformatted with the intention of creating models with differing levels of complexity to tackle the classification problem. It was decided ahead of time that these models would be judged by their accuracy, and the most accurate would be assessed against the testing set.
 
 After the initial splitting and resampling of the data, overall, 8 models were fit spanning 4 recipes types and 5 model specifications.
